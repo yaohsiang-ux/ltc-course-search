@@ -31,6 +31,7 @@ SOURCE_MODULES = [
     "tsrt",        # 呼吸
     "slh",         # 語言/聽力
     "tasw",        # 社工
+    "eswa",        # 社工（老人長照領域，老社專協）
 ]
 
 DATA_DIR = BASE / "data"
@@ -82,7 +83,7 @@ def main():
         try:
             mod = importlib.import_module(f"sources.{mod_name}")
             courses = mod.fetch()
-            if not courses:
+            if not courses and not mod.SOURCE.get("allow_empty"):
                 raise RuntimeError("回傳 0 筆（視為失敗）")
             prev_count = old_status_all.get(mod_name, {}).get("count", 0)
             warn = ""

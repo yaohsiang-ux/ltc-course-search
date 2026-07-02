@@ -13,8 +13,11 @@
 
 ## 自動更新
 
-GitHub Actions 每日台北時間 07:30 自動抓取所有來源、重建 `docs/index.html`。
+機構主機每日台北時間 07:10 自動抓取所有來源、重建頁面並推送本 repo，
+GitHub Pages 隨即發布最新 `docs/index.html`。
 單一來源失敗時沿用該來源上次資料並於頁尾標示。
+
+> 註：衛福部等台灣網站封鎖境外 IP，GitHub Actions 無法直接抓取（workflow 僅保留手動測試用）。
 
 ## 架構
 

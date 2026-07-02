@@ -1,8 +1,11 @@
-name: 每日更新積分課程
+# ⚠️ 雲端排程已停用：衛福部長照平台、護理學會、藥師公會等網站封鎖境外 IP，
+# GitHub Actions 主機（美國）連線逾時，無法雲端抓取。
+# 實際更新機制：機構 Mac 每日 07:10 由 LaunchAgent com.yaoxiang.course-search
+# 執行 update.py（抓取 → 建頁 → git push），GitHub Pages 自動發布 docs/。
+# 此 workflow 保留手動觸發，供日後測試來源是否解除封鎖。
+name: 手動測試雲端抓取
 
 on:
-  schedule:
-    - cron: "30 23 * * *"   # UTC 23:30 = 台北 07:30
   workflow_dispatch:
 
 permissions:
