@@ -22,6 +22,7 @@ from sources import force_ipv4  # noqa: E402
 SOURCE_MODULES = [
     "ltcpap",      # 長照（衛福部）
     "icarecat",    # 長照（民間平台長照喵）
+    "careplatform",  # 家庭照顧者（家總家照據點活動平台）
     "twna",        # 護理
     "ot",          # 職能
     "tpta",        # 物理
@@ -32,6 +33,12 @@ SOURCE_MODULES = [
     "slh",         # 語言/聽力
     "tasw",        # 社工
     "eswa",        # 社工（老人長照領域，老社專協）
+    "tpcsw",       # 社工（台北市社工師公會）
+    "mswa",        # 社工（醫務社工協會）
+    "ptroc",       # 物理（公會全聯會 JSON API）
+    "nurse_union",  # 護理（護理師護士公會全聯會）
+    "tpa",         # 藥師（台北市藥師公會）
+    "tmcs",        # 多職類（醫療繼續教育推廣學會）
 ]
 
 DATA_DIR = BASE / "data"
