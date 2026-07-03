@@ -26,7 +26,7 @@ body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;backgro
 .chip:hover{border-color:var(--org);color:var(--org)}
 .chip.on{background:var(--org);border-color:var(--org);color:#fff;font-weight:700}
 .chip.amber.on{background:var(--amber);border-color:var(--amber);color:var(--brown)}
-.chip.green.on{background:#3e7d4f;border-color:#3e7d4f;color:#fff}
+.chip.green.on{background:var(--brown);border-color:var(--brown);color:#fff}
 .count{margin:16px 4px 4px;font-size:.92rem;color:var(--muted)}
 .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:10px;display:flex;gap:14px;transition:.15s}
 .card:hover{box-shadow:0 3px 12px rgba(214,90,49,.14);border-color:#e9c4b3}
@@ -43,7 +43,7 @@ body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;backgro
 .tags{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap}
 .tag{font-size:.75rem;border-radius:12px;padding:2px 10px;background:#f4ede3;color:#7a6a52;border:1px solid #eadfce}
 .tag.track-ltc{background:var(--amber);color:var(--brown);border-color:var(--amber);font-weight:700}
-.tag.track-med{background:#2a7fb8;color:#fff;border-color:#2a7fb8;font-weight:700}
+.tag.track-med{background:var(--brown);color:#fff;border-color:var(--brown);font-weight:700}
 .tag.pts{background:#fdf1e9;color:var(--org);border-color:#f2cdb9;font-weight:700}
 .tag.src{background:#fff;border:1px dashed #cbb89a;color:#8a7d6d}
 .more{display:block;margin:20px auto;padding:10px 34px;border:none;border-radius:24px;background:var(--org);color:#fff;font-size:.95rem;cursor:pointer}
@@ -66,14 +66,14 @@ details.remind[open] summary{border-bottom:1px dashed #e3cfa5}
 footer{margin-top:34px;font-size:.8rem;color:var(--muted);line-height:1.8}
 footer table{border-collapse:collapse;margin-top:6px}
 footer td,footer th{border:1px solid var(--line);padding:3px 10px;font-weight:400;text-align:left}
-footer .ok{color:#3e7d4f}.footer .bad{color:#b8481f}
+footer .ok{color:var(--brown)}footer .bad{color:var(--org)}
 @media(max-width:640px){.hero h1{font-size:1.3rem}.datebox{min-width:60px}.flabel{width:100%}}
 </style>
 </head>
 <body>
 <div class="hero">
   <h1>🎓 長照 × 醫事人員積分課程搜尋</h1>
-  <p class="sub">長照人員繼續教育 ＋ 醫事九職類學會課程彙整（19 個資料來源）</p>
+  <p class="sub">長照人員繼續教育 ＋ 醫事各職類學會/公會課程 ＋ 照顧者活動彙整（19 個資料來源）</p>
   <div class="badges">
     <span class="badge">📅 2026-07-03 起</span>
     <span class="badge">🔄 資料更新：2026-07-03 11:59</span>
