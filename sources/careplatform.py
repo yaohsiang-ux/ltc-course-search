@@ -6,6 +6,7 @@
 台北市的 8 個共融據點（立心/健順/士林靈糧堂/婦女新知/紅心字會…）活動都發布於此。
 """
 import datetime
+import re
 
 import requests
 
@@ -34,8 +35,15 @@ def fetch():
         city = clean(row.get("city"))
         location = clean(row.get("location"))
         center = clean(row.get("centerName"))
-        signup_url = clean(row.get("signupUrl"))
         fee = clean(row.get("fee"))
+        # 報名連結：signupUrl 常為空，實際藏在 signupNote/description 內文
+        signup_url = clean(row.get("signupUrl"))
+        if not signup_url.startswith("http"):
+            blob = f"{row.get('signupNote') or ''} {row.get('description') or ''}"
+            m = re.search(r"(https?://\S+|(?:forms\.gle|reurl\.cc|docs\.google\.com)/\S+)", blob)
+            signup_url = m.group(1).rstrip("，。,)）") if m else ""
+            if signup_url and not signup_url.startswith("http"):
+                signup_url = "https://" + signup_url
         out.append(make_course(
             id=f"careplat-{row.get('id') or (start + title[:30])}",
             title=title,
