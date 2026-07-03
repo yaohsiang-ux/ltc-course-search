@@ -322,11 +322,21 @@ def main():
                 for y, m, d in re.findall(r"(20\d{2})[./-](\d{1,2})[./-](\d{1,2})", str(text))]
 
     def _keep(c):
-        """已開課、報名截止/額滿、報名期限已過的課程不顯示。"""
+        """已開課、報名截止/額滿、報名期限已過的課程不顯示；
+        例外：進行中的長期網路課程（線上、期程≥14天、未結束）保留（隨時可加入）。"""
         start = c.get("start") or ""
         end = c.get("end") or start
         if start and start < today:
-            return False  # 已開課
+            ongoing_online = False
+            if c.get("region") == "線上" and end >= today:
+                try:
+                    d1 = datetime.date.fromisoformat(start)
+                    d2 = datetime.date.fromisoformat(end)
+                    ongoing_online = (d2 - d1).days >= 14
+                except ValueError:
+                    pass
+            if not ongoing_online:
+                return False  # 已開課（非長期網路課程）
         if not start and end and end < today:
             return False
         ex = c.get("extra") or {}
