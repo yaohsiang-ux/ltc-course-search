@@ -3,6 +3,7 @@
 """由 data/courses.json 產生自包含搜尋網頁 積分課程搜尋.html。"""
 import datetime
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -19,7 +20,7 @@ TEMPLATE = r"""<!DOCTYPE html>
 :root{--org:#D65A31;--amber:#E6AF2E;--brown:#4B3621;--bg:#f5f3f0;--card:#fff;--line:#e8e2da;--txt:#3a3126;--muted:#8a7d6d}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:"PingFang TC","Microsoft JhengHei",system-ui,sans-serif;background:var(--bg);color:var(--txt)}
-.hero{background:linear-gradient(135deg,var(--brown) 0%,#8a4a2a 55%,var(--org) 100%);color:#fff;padding:34px 16px 30px;text-align:center}
+.hero{background:linear-gradient(135deg,#EFA24F 0%,#E1703A 45%,var(--org) 100%);color:#fff;padding:34px 16px 30px;text-align:center;text-shadow:0 1px 2px rgba(75,54,33,.25)}
 .hero h1{font-size:1.7rem;letter-spacing:.05em}
 .hero p.sub{margin-top:8px;opacity:.92;font-size:.95rem}
 .badges{margin-top:16px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
@@ -143,7 +144,7 @@ footer .ok{color:var(--brown)}footer .bad{color:var(--org)}
       __PROF_CHIPS__
     </div>
     <div class="frow" data-key="aud">
-      <span class="flabel">長照對象：</span>
+      <span class="flabel">長照人員職類/照顧者：</span>
       <button class="chip amber on" data-v="">全部</button>
       __AUD_CHIPS__
     </div>
@@ -315,8 +316,30 @@ def main():
     except Exception:
         status = {}
     today = datetime.date.today().isoformat()
-    courses = [c for c in data["courses"]
-               if not (c.get("start") or c.get("end")) or (c.get("end") or c.get("start")) >= today]
+
+    def _dates_in(text):
+        return [f"{y}-{int(m):02d}-{int(d):02d}"
+                for y, m, d in re.findall(r"(20\d{2})[./-](\d{1,2})[./-](\d{1,2})", str(text))]
+
+    def _keep(c):
+        """已開課、報名截止/額滿、報名期限已過的課程不顯示。"""
+        start = c.get("start") or ""
+        end = c.get("end") or start
+        if start and start < today:
+            return False  # 已開課
+        if not start and end and end < today:
+            return False
+        ex = c.get("extra") or {}
+        status = f'{ex.get("報名狀態", "")}{ex.get("狀態", "")}'
+        if any(k in status for k in ("截止", "額滿", "已結束")):
+            return False
+        for f in ("報名截止", "報名期間", "報名時間", "報名日期"):
+            ds = _dates_in(ex.get(f, ""))
+            if ds and max(ds) < today:
+                return False  # 報名期限已過
+        return True
+
+    courses = [c for c in data["courses"] if _keep(c)]
     # URL 白名單（防 javascript:/data: scheme 注入自包含頁面）
     for c in courses:
         if not str(c.get("url", "")).startswith(("http://", "https://")):
