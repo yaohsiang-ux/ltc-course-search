@@ -3,133 +3,133 @@
   "name": "長照專業發展平台(衛福部)",
   "track": "ltc",
   "ok": true,
-  "count": 1899,
-  "fetched_at": "2026-07-18 14:56"
+  "count": 1862,
+  "fetched_at": "2026-07-19 23:00"
  },
  "icarecat": {
   "name": "長照喵(民間平台)",
   "track": "ltc",
   "ok": true,
-  "count": 169,
-  "fetched_at": "2026-07-18 14:56"
+  "count": 159,
+  "fetched_at": "2026-07-19 23:00"
  },
  "careplatform": {
   "name": "家照據點活動平台(家總)",
   "track": "ltc",
   "ok": true,
-  "count": 425,
-  "fetched_at": "2026-07-18 14:56"
+  "count": 424,
+  "fetched_at": "2026-07-19 23:00"
  },
  "twna": {
   "name": "台灣護理學會",
   "track": "med",
   "ok": true,
   "count": 46,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "ot": {
   "name": "臺灣職能治療學會",
   "track": "med",
   "ok": true,
   "count": 116,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tpta": {
   "name": "臺灣物理治療學會",
   "track": "med",
   "ok": true,
   "count": 15,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "dietitians": {
   "name": "營養師公會全聯會",
   "track": "med",
   "ok": true,
   "count": 5,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tcpu": {
   "name": "諮商心理師公會全聯會",
   "track": "med",
   "ok": true,
   "count": 28,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "pharma": {
   "name": "藥師公會全聯會",
   "track": "med",
   "ok": true,
   "count": 8,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tsrt": {
   "name": "台灣呼吸治療學會",
   "track": "med",
   "ok": true,
   "count": 13,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "slh": {
   "name": "台灣聽力語言學會",
   "track": "med",
   "ok": true,
   "count": 14,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tasw": {
   "name": "台灣社工專業人員協會",
   "track": "med",
   "ok": true,
   "count": 68,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "eswa": {
   "name": "老社專協(老人長照社工)",
   "track": "med",
   "ok": true,
   "count": 1,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tpcsw": {
   "name": "台北市社工師公會",
   "track": "med",
   "ok": true,
   "count": 3,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "mswa": {
   "name": "醫務社工協會",
   "track": "med",
   "ok": true,
   "count": 7,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "ptroc": {
   "name": "物理治療師公會全聯會",
   "track": "med",
   "ok": true,
   "count": 1,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "nurse_union": {
   "name": "護理師護士公會全聯會",
   "track": "med",
   "ok": true,
   "count": 24,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tpa": {
   "name": "台北市藥師公會",
   "track": "med",
   "ok": true,
   "count": 6,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  },
  "tmcs": {
   "name": "醫療繼續教育推廣學會",
   "track": "med",
   "ok": true,
   "count": 4,
-  "fetched_at": "2026-07-18 14:56"
+  "fetched_at": "2026-07-19 23:00"
  }
 }
