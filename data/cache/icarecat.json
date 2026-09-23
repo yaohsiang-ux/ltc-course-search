@@ -3796,5 +3796,41 @@
   "organizer": "崑山科技大學",
   "price": "1600",
   "online": false
+ },
+ "92238": {
+  "title": "BLS-急救概念(CPR、AED、哈姆立克法)",
+  "start": "2026-10-04",
+  "end": "2026-10-04",
+  "location": "臺中市大里區國光路二段259號4樓之3",
+  "organizer": "真善美居家護理所",
+  "price": "500",
+  "online": false
+ },
+ "92237": {
+  "title": "BLS-急救概念(CPR、AED、哈姆立克法)",
+  "start": "2026-11-21",
+  "end": "2026-11-21",
+  "location": "臺中市大里區國光路二段259號4樓之3",
+  "organizer": "真善美居家護理所",
+  "price": "500",
+  "online": false
+ },
+ "92236": {
+  "title": "BLS-急救概念(CPR、AED、哈姆立克法)",
+  "start": "2026-11-07",
+  "end": "2026-11-07",
+  "location": "雲林縣斗六市雲林路三段441號",
+  "organizer": "真善美居家護理所",
+  "price": "500",
+  "online": false
+ },
+ "92235": {
+  "title": "BLS-急救概念(CPR、AED、哈姆立克法)",
+  "start": "2026-12-20",
+  "end": "2026-12-20",
+  "location": "雲林縣斗六市雲林路三段441號",
+  "organizer": "真善美居家護理所",
+  "price": "500",
+  "online": false
  }
 }
