@@ -3832,5 +3832,32 @@
   "organizer": "真善美居家護理所",
   "price": "500",
   "online": false
+ },
+ "92301": {
+  "title": "CPR+AED急救訓練 4h",
+  "start": "2026-11-22",
+  "end": "2026-11-22",
+  "location": "新北市中和區新生街166巷20號1樓",
+  "organizer": "童馨園居家長照機構",
+  "price": "650",
+  "online": false
+ },
+ "92334": {
+  "title": "CPR+AED急救訓練 4h-副本",
+  "start": "2026-10-31",
+  "end": "2026-10-31",
+  "location": "新北市中和區新生街166巷20號1樓",
+  "organizer": "童馨園居家長照機構",
+  "price": "650",
+  "online": false
+ },
+ "92409": {
+  "title": "BA08足部照護課程",
+  "start": "2026-10-31",
+  "end": "2026-11-01",
+  "location": "桃園市八德區介壽路二段361巷26號4樓",
+  "organizer": "桃園市長照福利促進協會",
+  "price": "2800",
+  "online": false
  }
 }
