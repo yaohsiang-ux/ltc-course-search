@@ -327,7 +327,7 @@ p.lead{text-align:center;opacity:.8;margin-bottom:36px}
 .card a.ghost{background:transparent;color:#f6c96b;border:1px solid #f6c96b}
 </style></head><body>
 <h1>燿翔 中秋節慶賀影片</h1>
-<p class="lead">臺北市私立燿翔居家長照機構 ・ 直式 1080×1920 ・ 30 秒</p>
+<p class="lead">臺北市私立燿翔居家長照機構 ・ 直式 1080×1920</p>
 <div class="grid">
 __CARDS__
 </div>
@@ -354,6 +354,10 @@ def build():
             f'<a href="{name}.html">播放動畫</a><a class="ghost" href="{name}.mp4" download>下載 MP4</a></div>'
         )
         print("寫入", OUT / f"{name}.html")
+    cards.append(
+        '<div class="card"><h2>中秋立體故事書</h2><p>后羿射日・嫦娥奔月・吳剛伐桂<br>翻頁立體紙雕動畫，約 100 秒</p>'
+        '<a href="mid-autumn-storybook.html">播放動畫</a><a class="ghost" href="mid-autumn-storybook.mp4" download>下載 MP4</a></div>'
+    )
     (OUT / "index.html").write_text(INDEX.replace("__CARDS__", "\n".join(cards)), encoding="utf-8")
     print("寫入", OUT / "index.html")
 

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中秋立體故事書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cover:#9b2a22; --cover-2:#6c1913; --gold:#e8b44c; --gold-2:#ffe3a3; --ink:#fff8e7; --edge:#fff5de;
+  --paper-bg:linear-gradient(180deg,#f8eed6,#eedfba);
+  --serif:'Noto Serif TC','WenQuanYi Zen Hei','PingFang TC','Microsoft JhengHei',serif;
+  --sans:'Noto Sans TC','WenQuanYi Zen Hei','PingFang TC','Microsoft JhengHei',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#050817;overflow:hidden}
+body{display:flex;align-items:center;justify-content:center;font-family:var(--sans);color:var(--ink)}
+.stage{position:relative;width:1080px;height:1920px;overflow:hidden;flex:none;transform:scale(var(--s,1));
+  background:radial-gradient(ellipse 820px 780px at 50% 56%,#3b2f63 0%,#1b2150 48%,#0a0f2e 100%)}
+.star{position:absolute;border-radius:50%;background:#fff}
+.glow{position:absolute;left:40px;top:640px;width:1000px;height:900px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,206,120,.26),rgba(255,206,120,0))}
+.shadow{position:absolute;left:100px;top:1300px;width:880px;height:170px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(0,0,0,.6),rgba(0,0,0,0))}
+
+/* 標題列 */
+.head{position:absolute;top:110px;left:0;right:0;text-align:center}
+.kicker{font-size:42px;letter-spacing:.32em;color:var(--gold);font-weight:500;height:60px}
+.title{font-family:var(--serif);font-weight:900;font-size:116px;line-height:1.2;letter-spacing:.14em;color:var(--gold-2);margin-top:10px;
+  text-shadow:0 6px 28px rgba(0,0,0,.5),0 0 36px rgba(255,210,120,.3);white-space:nowrap}
+
+/* 3D 立體書 */
+.viewport{position:absolute;inset:0;perspective:2300px;perspective-origin:540px 560px}
+.book{position:absolute;left:60px;top:760px;width:960px;height:640px;transform-style:preserve-3d}
+.board{position:absolute;left:480px;top:-14px;width:496px;height:668px;border-radius:4px 16px 16px 4px;
+  background:linear-gradient(135deg,var(--cover),var(--cover-2));transform:translateZ(-5px)}
+.page-r{position:absolute;left:480px;top:0;width:480px;height:640px;border-radius:0 10px 10px 0;
+  background:linear-gradient(90deg,rgba(120,80,30,.3) 0,rgba(120,80,30,0) 70px),var(--paper-bg)}
+.leaf,.cover{position:absolute;transform-style:preserve-3d;transform-origin:0 50%}
+.leaf{left:480px;top:0;width:480px;height:640px;visibility:hidden}
+.cover{left:480px;top:-14px;width:496px;height:668px}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}
+.face.back{transform:rotateY(180deg)}
+.shade{position:absolute;inset:0;background:#1a0f05;opacity:0}
+.leaf .face.front{border-radius:0 10px 10px 0;background:linear-gradient(90deg,rgba(120,80,30,.3) 0,rgba(120,80,30,0) 70px),var(--paper-bg)}
+.leaf .face.back,.cover .paper{border-radius:10px 0 0 10px;background:linear-gradient(270deg,rgba(120,80,30,.3) 0,rgba(120,80,30,0) 70px),var(--paper-bg)}
+.cover .face.front{border-radius:4px 16px 16px 4px;
+  background:radial-gradient(circle at 70% 25%,rgba(255,220,150,.18),rgba(255,220,150,0) 55%),linear-gradient(135deg,#a82e25,#6c1913)}
+.cover .face.back{border-radius:16px 4px 4px 16px;background:linear-gradient(135deg,var(--cover-2),var(--cover))}
+.cover .paper{position:absolute;left:16px;right:0;top:14px;bottom:14px}
+.cv-frame{position:absolute;inset:26px;border:3px solid var(--gold);border-radius:12px}
+.cv-frame::after{content:"";position:absolute;inset:10px;border:1.5px solid rgba(232,180,76,.6);border-radius:8px}
+.cv-moon{position:absolute;left:50%;top:72px;width:190px;height:190px;margin-left:-95px}
+.cv-t1{position:absolute;left:0;right:0;top:270px;text-align:center;font-family:var(--serif);font-weight:900;font-size:150px;line-height:1;color:var(--gold-2);letter-spacing:.1em;text-shadow:0 4px 0 #5a130f}
+.cv-t2{position:absolute;left:0;right:0;top:436px;text-align:center;font-family:var(--serif);font-weight:900;font-size:58px;color:var(--gold-2);letter-spacing:.2em}
+.cv-sub{position:absolute;left:0;right:0;top:522px;text-align:center;font-size:24px;color:var(--gold);letter-spacing:.12em}
+.cv-org{position:absolute;left:0;right:0;bottom:56px;text-align:center;font-size:26px;color:var(--gold-2);letter-spacing:.3em}
+
+.spread{position:absolute;inset:0;transform-style:preserve-3d;visibility:hidden}
+.pop{position:absolute;transform-origin:50% 100%;filter:drop-shadow(0 10px 8px rgba(0,0,0,.35))}
+.pop svg{display:block;width:100%;height:100%;overflow:visible}
+
+/* 旁白 */
+.cap{position:absolute;left:56px;right:56px;top:1480px;height:330px;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:26px 44px;border-radius:36px;background:rgba(9,13,40,.66);border:2px solid rgba(232,180,76,.55);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.cap-t{font-size:60px;line-height:1.5;font-weight:500;letter-spacing:.04em}
+.cap-t b{color:var(--gold-2);font-weight:700}
+.foot{position:absolute;left:0;right:0;bottom:44px;text-align:center;font-size:32px;letter-spacing:.3em;color:var(--gold);opacity:.8}
+.petal2d{position:absolute;left:0;top:0;width:30px;height:30px}
+
+/* 播放控制（截圖模式隱藏） */
+.ui{position:fixed;left:0;right:0;bottom:0;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+  font:15px/1 var(--sans);color:#cbd3ea;background:linear-gradient(transparent,rgba(0,0,0,.65));z-index:9}
+.ui button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font-size:15px}
+.ui button:hover{background:rgba(255,255,255,.24)}
+.ui input{flex:1 1 100%;accent-color:#e8b44c}
+html.capture .ui{display:none}
+</style>
+</head>
+<body>
+
+<!-- 共用圖形 -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="rabbitShape">
+      <ellipse cx="0" cy="0" rx="22" ry="16"/>
+      <circle cx="-18" cy="-12" r="11"/>
+      <ellipse cx="-17" cy="-34" rx="4.5" ry="13" transform="rotate(-10 -17 -34)"/>
+      <ellipse cx="-8" cy="-33" rx="4.5" ry="13" transform="rotate(14 -8 -33)"/>
+      <circle cx="21" cy="-3" r="6"/>
+    </g>
+    <g id="cloudShape">
+      <circle cx="0" cy="40" r="30"/><circle cx="38" cy="18" r="38"/><circle cx="84" cy="26" r="32"/>
+      <circle cx="118" cy="44" r="24"/><circle cx="60" cy="48" r="32"/><rect x="0" y="44" width="120" height="26" rx="13"/>
+    </g>
+    <g id="osm"><circle cx="0" cy="-4" r="3.6"/><circle cx="4" cy="0" r="3.6"/><circle cx="0" cy="4" r="3.6"/><circle cx="-4" cy="0" r="3.6"/></g>
+    <!-- 后羿（拉弓） -->
+    <g id="hyBow">
+      <path d="M168 262 L126 345 M168 262 L220 343" fill="none"/>
+      <path d="M158 192 L198 186 L192 266 L146 268 Z"/>
+      <circle cx="190" cy="146" r="12"/>
+      <circle cx="182" cy="122" r="3"/>
+      <path d="M180 188 L128 166 L184 156" fill="none"/>
+      <path d="M184 188 L258 108" fill="none"/>
+    </g>
+    <!-- 村民：愁苦 / 歡呼 -->
+    <g id="vgSad">
+      <path d="M90 170 L76 214 M90 170 L104 214 M78 116 L66 166 M100 114 L112 166" fill="none"/>
+      <path d="M72 110 L106 108 L108 172 L72 174 Z"/><circle cx="84" cy="94" r="10"/>
+      <path d="M240 170 L226 214 M240 170 L254 214 M234 116 L220 166 M252 114 L262 166" fill="none"/>
+      <path d="M222 110 L256 108 L258 172 L222 174 Z"/><circle cx="234" cy="94" r="10"/>
+      <path d="M160 178 L152 214 M160 178 L170 214" fill="none"/><path d="M148 136 L172 134 L174 180 L146 182 Z"/><circle cx="156" cy="122" r="8"/>
+    </g>
+    <g id="vgJoy">
+      <path d="M90 170 L76 214 M90 170 L104 214 M78 114 L58 70 M100 112 L118 66" fill="none"/>
+      <path d="M72 110 L106 108 L108 172 L72 174 Z"/><circle cx="89" cy="88" r="10"/>
+      <path d="M240 170 L226 214 M240 170 L254 214 M228 114 L208 70 M250 112 L268 66" fill="none"/>
+      <path d="M222 110 L256 108 L258 172 L222 174 Z"/><circle cx="239" cy="88" r="10"/>
+      <path d="M160 178 L152 214 M160 178 L170 214 M150 140 L136 108 M170 138 L184 106" fill="none"/><path d="M148 136 L172 134 L174 180 L146 182 Z"/><circle cx="160" cy="118" r="8"/>
+    </g>
+    <!-- 后羿（站立望月） -->
+    <g id="hyStand">
+      <path d="M90 212 L70 292 M90 212 L114 292" fill="none"/>
+      <path d="M74 132 L110 128 L112 216 L70 218 Z"/>
+      <circle cx="96" cy="100" r="12"/>
+      <circle cx="90" cy="76" r="3"/>
+      <path d="M106 140 L136 118 L150 96" fill="none"/>
+      <path d="M78 142 L64 198" fill="none"/>
+    </g>
+    <!-- 逄蒙 -->
+    <g id="fmBody">
+      <path d="M112 252 L80 324 M112 252 L150 324" fill="none"/>
+      <path d="M92 162 L134 158 L138 256 L86 258 Z"/>
+      <circle cx="112" cy="128" r="13"/>
+      <path d="M96 172 L62 204 L40 188" fill="none"/>
+      <path d="M130 170 L160 134" fill="none"/>
+    </g>
+    <!-- 吳剛 -->
+    <g id="wgBody">
+      <path d="M560 442 L522 512 M560 442 L604 512" fill="none"/>
+      <path d="M544 378 L570 374 L574 444 L546 446 Z"/>
+      <circle cx="550" cy="346" r="11"/>
+    </g>
+    <g id="wgArms">
+      <path d="M552 380 L512 402 M552 382 L532 414 L508 410" fill="none"/>
+    </g>
+  </defs>
+</svg>
+
+<div class="stage" id="stage">
+  <div id="stars"></div>
+  <div class="glow"></div>
+  <div class="shadow" id="shadow"></div>
+
+  <div class="head" id="head"><div class="kicker" id="kicker"></div><div class="title" id="title"></div></div>
+
+  <div class="viewport">
+    <div class="book" id="book">
+      <div class="board"></div>
+      <div class="page-r"></div>
+
+      <!-- ===== 第一回 后羿射日 ===== -->
+      <div class="spread" id="spA">
+        <div class="pop" id="aBack" style="left:30px;top:-330px;width:900px;height:500px">
+          <svg viewBox="0 0 900 500">
+            <defs>
+              <linearGradient id="aHotG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff7a32"/><stop offset=".55" stop-color="#ffc24f"/><stop offset="1" stop-color="#f2913f"/></linearGradient>
+              <linearGradient id="aCoolG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5fa6da"/><stop offset=".6" stop-color="#bfe0ee"/><stop offset="1" stop-color="#f6dca6"/></linearGradient>
+              <clipPath id="aClip"><path d="M0 500 L0 110 Q0 0 110 0 L790 0 Q900 0 900 110 L900 500 Z"/></clipPath>
+            </defs>
+            <g clip-path="url(#aClip)">
+              <rect width="900" height="500" fill="url(#aCoolG)"/>
+              <rect id="aHot" width="900" height="500" fill="url(#aHotG)"/>
+              <g id="aSuns"></g>
+              <path fill="#7a4a35" d="M0 500 L0 340 L70 300 L130 330 L230 228 L300 290 L360 262 L450 330 L540 248 L620 300 L700 272 L790 320 L860 282 L900 300 L900 500Z"/>
+              <path fill="#fff5de" d="M230 228 L208 250 L220 248 L230 258 L241 247 L253 251Z M540 248 L518 270 L530 268 L540 278 L551 267 L563 271Z"/>
+              <path fill="#5a3326" d="M0 500 L0 410 Q120 372 220 400 T440 396 T660 404 T900 392 L900 500Z"/>
+              <g id="aArrows"></g>
+            </g>
+            <path d="M0 500 L0 110 Q0 0 110 0 L790 0 Q900 0 900 110 L900 500" fill="none" stroke="#fff5de" stroke-width="8"/>
+          </svg>
+        </div>
+        <div class="pop" id="aMid" style="left:30px;top:100px;width:900px;height:240px">
+          <svg viewBox="0 0 900 240">
+            <g id="aDry">
+              <path d="M0 240 L0 100 Q140 50 290 90 Q450 130 600 80 Q760 40 900 100 L900 240Z" fill="#c08a52" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+              <path d="M110 150 l30 20 l-10 25 l25 20 M420 150 l-20 30 l20 15 l-10 30 M640 130 l25 25 l-15 20 l30 25 M800 160 l-20 20 l15 30 M270 180 l25 10 l5 30" stroke="#7b4a24" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <g id="aDryCrops" stroke="#8a5a2b" stroke-width="4" fill="none" stroke-linecap="round"></g>
+              <g fill="#6a4630"><path d="M690 112 l34 -28 l34 28 v42 h-68z"/><path d="M770 104 l28 -24 l28 24 v36 h-56z"/></g>
+            </g>
+            <g id="aLush" opacity="0">
+              <path d="M0 240 L0 100 Q140 50 290 90 Q450 130 600 80 Q760 40 900 100 L900 240Z" fill="#7db365" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+              <path d="M0 240 L0 170 Q200 140 420 175 Q640 205 900 160 L900 240Z" fill="#5f9a52"/>
+              <g id="aLushCrops"></g>
+              <g><path d="M690 112 l34 -28 l34 28 v42 h-68z" fill="#b8322a"/><rect x="700" y="112" width="48" height="42" fill="#f3e1bd"/><rect x="716" y="126" width="16" height="28" fill="#7a2a22"/>
+                 <path d="M770 104 l28 -24 l28 24 v36 h-56z" fill="#b8322a"/><rect x="778" y="104" width="40" height="36" fill="#f3e1bd"/><rect x="792" y="116" width="12" height="24" fill="#7a2a22"/></g>
+            </g>
+          </svg>
+        </div>
+        <div class="pop" id="aFront" style="left:40px;top:150px;width:400px;height:420px">
+          <svg viewBox="0 0 400 420">
+            <defs><radialGradient id="elxG"><stop offset="0" stop-color="#fff3b0" stop-opacity=".95"/><stop offset="1" stop-color="#ffd35a" stop-opacity="0"/></radialGradient></defs>
+            <path d="M10 420 L34 352 Q84 318 150 330 Q236 318 290 346 Q334 364 346 420 Z" fill="#5d4a3a" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+            <path d="M60 382 q40 -20 80 -8 M200 374 q50 -14 100 6" stroke="#44352a" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <g stroke-linecap="round"><path d="M156 198 L136 254" stroke="#fff5de" stroke-width="22"/><path d="M156 198 L136 254" stroke="#6b3a1f" stroke-width="15"/>
+              <path d="M152 198 l-6 -22 M160 200 l2 -22" stroke="#e8b44c" stroke-width="4"/></g>
+            <use href="#hyBow" stroke="#fff5de" fill="#fff5de" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+            <use href="#hyBow" stroke="#a3302a" fill="#a3302a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M180 142 Q156 138 142 150 Q132 160 118 154" stroke="#e8b44c" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <path d="M181 44 Q283 92 284 204" stroke="#fff5de" stroke-width="13" fill="none" stroke-linecap="round"/>
+            <path d="M181 44 Q283 92 284 204" stroke="#5a2b1a" stroke-width="7" fill="none" stroke-linecap="round"/>
+            <path id="aString" d="M181 44 L233 124 L284 204" stroke="#fff5de" stroke-width="2.5" fill="none"/>
+            <g id="aNock"><line id="aNockL" stroke="#4a2616" stroke-width="5" stroke-linecap="round"/><path id="aNockH" fill="#4a2616"/></g>
+            <g id="aElixir" opacity="0">
+              <circle r="58" fill="url(#elxG)"/>
+              <g id="aSpark" fill="#fff6c8"><path d="M0 -50 l4 10 l-4 10 l-4 -10z"/><path d="M50 0 l-10 4 l-10 -4 l10 -4z"/><path d="M0 50 l4 -10 l-4 -10 l-4 10z"/><path d="M-50 0 l10 4 l10 -4 l-10 -4z"/></g>
+              <g stroke="#fff5de" stroke-width="4" paint-order="stroke"><rect x="-3" y="-30" width="6" height="9" fill="#6b3a1f"/><circle cy="-12" r="10" fill="#f2b33d"/><circle cy="11" r="16" fill="#f2b33d"/></g>
+              <path d="M-9 -1 h18" stroke="#c0392b" stroke-width="5" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+        <div class="pop" id="aVillage" style="left:560px;top:330px;width:340px;height:230px">
+          <svg viewBox="0 0 340 230">
+            <path d="M0 230 Q170 196 340 230Z" fill="#8a6a45" stroke="#fff5de" stroke-width="5" paint-order="stroke"/>
+            <g id="aSad">
+              <use href="#vgSad" stroke="#fff5de" fill="#fff5de" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+              <use href="#vgSad" stroke="#4d5a8a" fill="#4d5a8a" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <g id="aJoy" opacity="0">
+              <use href="#vgJoy" stroke="#fff5de" fill="#fff5de" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+              <use href="#vgJoy" stroke="#3f7d5c" fill="#3f7d5c" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ===== 第二回 嫦娥奔月 ===== -->
+      <div class="spread" id="spB">
+        <div class="pop" id="bBack" style="left:30px;top:-330px;width:900px;height:500px">
+          <svg viewBox="0 0 900 500">
+            <defs>
+              <linearGradient id="bSkyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1a45"/><stop offset=".7" stop-color="#23336e"/><stop offset="1" stop-color="#3d3f7a"/></linearGradient>
+              <radialGradient id="bMoonG" cx=".42" cy=".38"><stop offset="0" stop-color="#fffbe8"/><stop offset=".6" stop-color="#fbeab8"/><stop offset="1" stop-color="#efd18a"/></radialGradient>
+              <radialGradient id="bHaloG"><stop offset="0" stop-color="#ffeca8" stop-opacity=".6"/><stop offset="1" stop-color="#ffeca8" stop-opacity="0"/></radialGradient>
+              <clipPath id="bClip"><path d="M0 500 L0 110 Q0 0 110 0 L790 0 Q900 0 900 110 L900 500 Z"/></clipPath>
+            </defs>
+            <g clip-path="url(#bClip)">
+              <rect width="900" height="500" fill="url(#bSkyG)"/>
+              <g id="bStars" fill="#fff"></g>
+              <circle id="bHalo" cx="610" cy="180" r="230" fill="url(#bHaloG)"/>
+              <circle cx="610" cy="180" r="128" fill="url(#bMoonG)"/>
+              <g fill="#e6c983" opacity=".55"><circle cx="540" cy="130" r="16"/><circle cx="680" cy="110" r="10"/><circle cx="690" cy="230" r="20"/></g>
+              <g fill="#cfae63" transform="translate(610 238)">
+                <rect x="-70" y="-12" width="140" height="30"/>
+                <path d="M-96 -12 Q-60 -22 -52 -40 L52 -40 Q60 -22 96 -12 Z"/>
+                <rect x="-40" y="-72" width="80" height="32"/>
+                <path d="M-64 -72 Q-40 -82 -32 -98 L32 -98 Q40 -82 64 -72 Z"/>
+                <g fill="#fbe9b8"><rect x="-8" y="-4" width="16" height="22"/><rect x="-50" y="-4" width="12" height="14"/><rect x="38" y="-4" width="12" height="14"/><rect x="-6" y="-64" width="12" height="18"/></g>
+              </g>
+              <g id="bRabbit" opacity="0">
+                <use href="#rabbitShape" fill="#c9a86a" stroke="#c9a86a" stroke-width="5"/>
+                <use href="#rabbitShape" fill="#fffaf0"/>
+                <circle cx="-23" cy="-14" r="2.2" fill="#d9534f"/>
+              </g>
+              <path fill="#1a2350" d="M0 500 L0 420 Q150 380 300 410 T600 400 T900 410 L900 500Z"/>
+            </g>
+            <path d="M0 500 L0 110 Q0 0 110 0 L790 0 Q900 0 900 110 L900 500" fill="none" stroke="#fff5de" stroke-width="8"/>
+          </svg>
+        </div>
+        <div class="pop" id="bMid" style="left:30px;top:110px;width:900px;height:220px">
+          <svg viewBox="0 0 900 220">
+            <g transform="translate(30 60) scale(1.3)"><use href="#cloudShape" fill="#d8b36a" stroke="#d8b36a" stroke-width="10"/><use href="#cloudShape" fill="#f4ead2"/></g>
+            <g transform="translate(700 40) scale(1.1)"><use href="#cloudShape" fill="#d8b36a" stroke="#d8b36a" stroke-width="10"/><use href="#cloudShape" fill="#f4ead2"/></g>
+            <path d="M40 140 q30 -30 60 0 q30 30 60 0 M720 110 q30 -30 60 0" stroke="#d8b36a" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <path d="M0 220 L0 170 Q200 140 420 172 Q640 200 900 160 L900 220Z" fill="#2a3470" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+          </svg>
+        </div>
+        <div class="pop" id="bHouse" style="left:20px;top:190px;width:340px;height:330px">
+          <svg viewBox="0 0 340 330">
+            <path d="M0 330 Q170 296 340 330Z" fill="#3d3a6a"/>
+            <rect x="40" y="150" width="260" height="165" fill="#efe0c2" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+            <rect x="52" y="150" width="16" height="165" fill="#a3302a"/><rect x="272" y="150" width="16" height="165" fill="#a3302a"/>
+            <rect x="140" y="205" width="60" height="110" fill="#7a2a22"/><circle cx="170" cy="252" r="6" fill="#e8b44c"/>
+            <rect x="86" y="196" width="40" height="46" fill="#ffd27a"/><rect x="214" y="196" width="40" height="46" fill="#ffd27a"/>
+            <path d="M86 219 h40 M106 196 v46 M214 219 h40 M234 196 v46" stroke="#b07a3a" stroke-width="3"/>
+            <path d="M8 160 Q52 152 70 104 L270 104 Q288 152 332 160 Z" fill="#34305e" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+            <path d="M60 96 L280 96" stroke="#4a4480" stroke-width="14" stroke-linecap="round"/>
+            <path d="M100 110 L90 150 M140 110 L136 150 M180 110 L182 150 M220 110 L228 150 M256 110 L270 150" stroke="#4a4480" stroke-width="4"/>
+            <g id="bLant1" transform="translate(92 164)"><line x1="0" y1="-10" x2="0" y2="0" stroke="#e8b44c" stroke-width="2"/><ellipse cx="0" cy="14" rx="11" ry="14" fill="#e4573a"/><rect x="-5" y="27" width="10" height="4" fill="#e8b44c"/></g>
+            <g id="bLant2" transform="translate(248 164)"><line x1="0" y1="-10" x2="0" y2="0" stroke="#e8b44c" stroke-width="2"/><ellipse cx="0" cy="14" rx="11" ry="14" fill="#e4573a"/><rect x="-5" y="27" width="10" height="4" fill="#e8b44c"/></g>
+          </svg>
+        </div>
+        <div class="pop" id="bChange" style="left:300px;top:180px;width:220px;height:320px">
+          <svg viewBox="0 0 220 320">
+            <defs><radialGradient id="pillG"><stop offset="0" stop-color="#fff6c0"/><stop offset="1" stop-color="#ffd35a" stop-opacity="0"/></radialGradient></defs>
+            <g stroke="#ffe3a3" stroke-width="5" paint-order="stroke">
+              <path id="ceRibL" d="M88 96 C 40 120, 26 200, 52 252 C 68 284, 30 306, 12 296" stroke="#d9534f" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path id="ceRibR" d="M132 96 C 182 118, 196 186, 170 238 C 154 270, 190 290, 206 276" stroke="#d9534f" stroke-width="7" fill="none" stroke-linecap="round"/>
+              <path d="M96 80 Q110 76 124 80 L132 130 Q150 210 176 300 Q110 316 44 300 Q70 210 88 130 Z" fill="#f6dfe6"/>
+              <path d="M104 132 L116 132 L128 302 L92 302 Z" fill="#e58e9f" stroke="none"/>
+              <rect x="90" y="124" width="40" height="9" fill="#c0392b" stroke="none"/>
+              <path d="M92 86 Q58 104 40 156 Q54 166 70 156 Q80 124 96 106Z" fill="#f6dfe6"/>
+              <path d="M126 86 Q152 108 140 136 Q126 140 116 122Z" fill="#f6dfe6"/>
+              <circle cx="110" cy="62" r="17" fill="#fbe6d4"/>
+              <path d="M92 62 Q92 40 110 40 Q128 40 128 62 Q120 50 110 52 Q100 50 92 62Z" fill="#2a2140"/>
+              <circle cx="95" cy="34" r="11" fill="#2a2140"/><circle cx="125" cy="34" r="11" fill="#2a2140"/>
+            </g>
+            <circle cx="118" cy="30" r="3.5" fill="#e8b44c"/>
+            <g id="cePill"><circle cx="134" cy="126" r="22" fill="url(#pillG)"/><circle cx="134" cy="126" r="6" fill="#fff3a0"/></g>
+          </svg>
+        </div>
+        <div class="pop" id="bVillain" style="left:640px;top:190px;width:220px;height:330px">
+          <svg viewBox="0 0 220 330">
+            <path d="M160 134 L192 50" stroke="#fff5de" stroke-width="12" stroke-linecap="round"/>
+            <path d="M160 134 L192 50" stroke="#c8d0dc" stroke-width="6" stroke-linecap="round"/>
+            <use href="#fmBody" stroke="#fff5de" fill="#fff5de" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+            <use href="#fmBody" stroke="#2b2238" fill="#2b2238" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M96 118 L112 104 L128 118 Z" fill="#2b2238" stroke="#fff5de" stroke-width="4" paint-order="stroke"/>
+            <circle cx="106" cy="128" r="2.6" fill="#ff4a3a"/>
+          </svg>
+        </div>
+        <div class="pop" id="bHouyi" style="left:470px;top:310px;width:440px;height:300px">
+          <svg viewBox="0 0 440 300">
+            <path d="M0 300 Q220 270 440 300Z" fill="#3d3a6a"/>
+            <use href="#hyStand" stroke="#fff5de" fill="#fff5de" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+            <use href="#hyStand" stroke="#a3302a" fill="#a3302a" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+            <g stroke="#fff5de" stroke-width="5" paint-order="stroke">
+              <path d="M180 216 L392 216 L382 262 L190 262Z" fill="#b8322a"/>
+              <rect x="168" y="202" width="236" height="16" rx="4" fill="#7a3b22"/>
+              <rect x="186" y="262" width="12" height="36" fill="#7a3b22"/><rect x="374" y="262" width="12" height="36" fill="#7a3b22"/>
+              <ellipse cx="222" cy="198" rx="36" ry="7" fill="#e8d6b0"/>
+              <circle cx="222" cy="176" r="24" fill="#c9d86a"/>
+              <ellipse cx="292" cy="192" rx="32" ry="10" fill="#d99a4a"/>
+              <ellipse cx="292" cy="178" rx="32" ry="10" fill="#e3a957"/>
+            </g>
+            <path d="M222 152 q10 -12 20 -6" stroke="#4f8a3a" stroke-width="5" fill="none" stroke-linecap="round"/>
+            <circle cx="292" cy="178" r="5" fill="none" stroke="#b5752e" stroke-width="2.5"/>
+            <g fill="#f08a2c" stroke="#fff5de" stroke-width="3" paint-order="stroke"><circle cx="346" cy="190" r="13"/><circle cx="372" cy="190" r="13"/><circle cx="359" cy="170" r="13"/></g>
+            <path id="bSmoke" d="M404 200 q-8 -20 4 -36 q10 -16 -2 -34" stroke="#e8e0d0" stroke-width="3" fill="none" opacity=".7" stroke-linecap="round"/>
+            <rect x="398" y="196" width="12" height="10" fill="#8a6a3a"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ===== 第三回 吳剛伐桂 ===== -->
+      <div class="spread" id="spC">
+        <div class="pop" id="cBack" style="left:30px;top:-330px;width:900px;height:500px">
+          <svg viewBox="0 0 900 500">
+            <defs>
+              <linearGradient id="cSkyG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1f2463"/><stop offset=".6" stop-color="#5b5ea6"/><stop offset="1" stop-color="#b9a9d8"/></linearGradient>
+              <clipPath id="cClip"><path d="M0 500 L0 110 Q0 0 110 0 L790 0 Q900 0 900 110 L900 500 Z"/></clipPath>
+            </defs>
+            <g clip-path="url(#cClip)">
+              <rect width="900" height="500" fill="url(#cSkyG)"/>
+              <g id="cStars" fill="#fff"></g>
+              <circle cx="770" cy="110" r="48" fill="#4f8fd0" stroke="#fff5de" stroke-width="5"/>
+              <path d="M742 92 q14 -14 28 -4 q6 14 -8 22 q-16 2 -20 -18z M780 124 q14 -6 22 6 q-4 14 -18 12z" fill="#6fbf73"/>
+              <g fill="#cdb8e8" transform="translate(170 330)" opacity=".85">
+                <rect x="-60" y="-10" width="120" height="26"/><path d="M-82 -10 Q-52 -20 -44 -34 L44 -34 Q52 -20 82 -10 Z"/>
+                <rect x="-34" y="-60" width="68" height="26"/><path d="M-54 -60 Q-34 -68 -28 -82 L28 -82 Q34 -68 54 -60 Z"/>
+              </g>
+              <path fill="#9f93c9" d="M0 500 L0 400 Q160 360 330 392 T640 380 T900 396 L900 500Z"/>
+            </g>
+            <path d="M0 500 L0 110 Q0 0 110 0 L790 0 Q900 0 900 110 L900 500" fill="none" stroke="#fff5de" stroke-width="8"/>
+          </svg>
+        </div>
+        <div class="pop" id="cGround" style="left:30px;top:170px;width:900px;height:200px">
+          <svg viewBox="0 0 900 200">
+            <path d="M0 200 L0 70 Q220 30 450 60 Q690 90 900 50 L900 200Z" fill="#d8d2ec" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+            <g fill="#bdb4dc"><ellipse cx="140" cy="120" rx="46" ry="12"/><ellipse cx="420" cy="150" rx="60" ry="14"/><ellipse cx="760" cy="112" rx="40" ry="10"/><ellipse cx="610" cy="170" rx="30" ry="8"/></g>
+          </svg>
+        </div>
+        <div class="pop" id="cMain" style="left:70px;top:-20px;width:820px;height:520px">
+          <svg viewBox="0 0 820 520">
+            <g stroke-linecap="round" fill="none">
+              <path d="M350 300 Q300 250 240 230 M395 290 Q450 240 520 220 M372 290 L374 200" stroke="#fff5de" stroke-width="24"/>
+              <path d="M350 300 Q300 250 240 230 M395 290 Q450 240 520 220 M372 290 L374 200" stroke="#6b4226" stroke-width="16"/>
+            </g>
+            <g id="cCanopy"></g>
+            <path d="M325 520 Q338 440 340 380 Q342 330 330 290 L360 280 L372 300 L390 270 L412 282 Q398 330 402 380 Q406 440 425 520 Z" fill="#6b4226" stroke="#fff5de" stroke-width="6" paint-order="stroke"/>
+            <path d="M352 340 q8 30 0 60 M384 360 q-6 40 4 80" stroke="#553319" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <path id="cNotch" d="M403 424 L380 440 L405 456 Z" fill="#f0cf98" stroke="#9a6a3a" stroke-width="2" opacity="0"/>
+            <g id="cHeal" opacity="0" fill="#c8f0a0"><circle cx="396" cy="426" r="4"/><circle cx="410" cy="446" r="3"/><circle cx="392" cy="458" r="4"/></g>
+            <g id="cChips" fill="#e8c48a"></g>
+            <g id="cWugang" opacity="0">
+              <use href="#wgBody" stroke="#fff5de" fill="#fff5de" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+              <use href="#wgBody" stroke="#2d3f73" fill="#2d3f73" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M526 338 L550 314 L574 338 Z" fill="#d6ad5a" stroke="#fff5de" stroke-width="4" paint-order="stroke"/>
+              <g id="cArm">
+                <path d="M522 398 L426 444" stroke="#fff5de" stroke-width="14" stroke-linecap="round"/>
+                <path d="M522 398 L426 444" stroke="#7a4a24" stroke-width="8" stroke-linecap="round"/>
+                <path d="M434 426 L410 424 Q398 444 410 464 L436 458 Z" fill="#cfd6e0" stroke="#fff5de" stroke-width="4" paint-order="stroke"/>
+                <use href="#wgArms" stroke="#fff5de" stroke-width="26" stroke-linecap="round" stroke-linejoin="round"/>
+                <use href="#wgArms" stroke="#2d3f73" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+              </g>
+            </g>
+            <g id="cPetals" fill="#f4c542"></g>
+          </svg>
+        </div>
+        <div class="pop" id="cRabbit" style="left:30px;top:410px;width:230px;height:200px">
+          <svg viewBox="0 0 230 200">
+            <path d="M0 200 Q115 170 230 200Z" fill="#bdb4dc"/>
+            <g transform="translate(92 150) scale(1.9) scale(-1 1)">
+              <use href="#rabbitShape" fill="#c9a86a" stroke="#c9a86a" stroke-width="5"/>
+              <use href="#rabbitShape" fill="#fffaf0"/>
+              <circle cx="-23" cy="-14" r="2.2" fill="#d9534f"/>
+            </g>
+            <path d="M150 148 L196 148 L188 188 L158 188 Z" fill="#8a5a3b" stroke="#fff5de" stroke-width="4" paint-order="stroke"/>
+            <g id="cPestle"><path d="M128 104 L172 142" stroke="#fff5de" stroke-width="12" stroke-linecap="round"/><path d="M128 104 L172 142" stroke="#b07a4a" stroke-width="7" stroke-linecap="round"/></g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 翻頁用紙張 -->
+      <div class="leaf" id="leaf1"><div class="face front"><div class="shade"></div></div><div class="face back"><div class="shade"></div></div></div>
+      <div class="leaf" id="leaf2"><div class="face front"><div class="shade"></div></div><div class="face back"><div class="shade"></div></div></div>
+
+      <!-- 封面 -->
+      <div class="cover" id="cover">
+        <div class="face front">
+          <div class="cv-frame"></div>
+          <svg class="cv-moon" viewBox="0 0 190 190">
+            <defs><radialGradient id="cvMoonG" cx=".42" cy=".38"><stop offset="0" stop-color="#fffbe8"/><stop offset="1" stop-color="#f0cf7e"/></radialGradient></defs>
+            <circle cx="95" cy="95" r="80" fill="url(#cvMoonG)" stroke="#e8b44c" stroke-width="4"/>
+            <g transform="translate(100 112) scale(1.3)" opacity=".4"><use href="#rabbitShape" fill="#a98a4d"/></g>
+          </svg>
+          <div class="cv-t1">中秋</div>
+          <div class="cv-t2">立體故事書</div>
+          <div class="cv-sub">后羿射日・嫦娥奔月・吳剛伐桂</div>
+          <div class="cv-org">燿翔居家長照機構</div>
+          <div class="shade"></div>
+        </div>
+        <div class="face back"><div class="paper"></div><div class="shade"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="petals2d"></div>
+  <div class="cap" id="cap"><div class="cap-t" id="capT"></div></div>
+  <div class="foot">臺北市私立燿翔居家長照機構</div>
+</div>
+
+<div class="ui">
+  <button id="bPlay">暫停</button>
+  <button data-t="0">封面</button><button data-t="6.5">后羿射日</button><button data-t="34">嫦娥奔月</button><button data-t="62">吳剛伐桂</button>
+  <input type="range" id="seek" min="0" max="100" step="0.1" value="0">
+</div>
+
+<script>
+(function(){
+  var D = 100; window.__DURATION = D;
+  var $ = function(id){ return document.getElementById(id); };
+  var seed = 915; function rnd(){ seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+  function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
+  function P(t,a,b){ return clamp((t-a)/(b-a), 0, 1); }
+  function eio(x){ return x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x+2, 3)/2; }
+  function eout(x){ return 1 - Math.pow(1-x, 3); }
+  function ein(x){ return x*x*x; }
+  function ebk(x){ var c1 = 1.4, c3 = c1 + 1; return 1 + c3*Math.pow(x-1,3) + c1*Math.pow(x-1,2); }
+  function lerp(a,b,x){ return a + (b-a)*x; }
+  var NS = 'http://www.w3.org/2000/svg';
+  function el(tag, attrs, parent){ var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
+
+  /* ---------- 產生重複圖形 ---------- */
+  var stageStars = [], sb = $('stars');
+  for (var i=0;i<90;i++){
+    var d = document.createElement('div'), s = 2 + rnd()*4;
+    d.className = 'star';
+    d.style.cssText = 'left:'+(rnd()*1080).toFixed(0)+'px;top:'+(rnd()*1900).toFixed(0)+'px;width:'+s.toFixed(1)+'px;height:'+s.toFixed(1)+'px';
+    sb.appendChild(d); stageStars.push({el:d, ph:rnd()*6.28, sp:.8 + rnd()*1.6});
+  }
+
+  // 十個太陽
+  var SUNS = [], sunG = $('aSuns');
+  for (i=0;i<10;i++){
+    var g = el('g', {}, sunG), rays = el('g', {}, g);
+    for (var k=0;k<12;k++) el('path', {d:'M0 -60 L9 -40 L-9 -40Z', fill:'#ffb62e', transform:'rotate('+(k*30)+')'}, rays);
+    el('circle', {r:36, fill:'#ffe066', stroke:'#fff5de', 'stroke-width':5}, g);
+    el('circle', {r:24, fill:'#ffd23f'}, g);
+    SUNS.push({g:g, rays:rays, x:90 + i*80, y:200 - 118*Math.sin(Math.PI*i/9), s:.78 + (i%3)*.12, ph:rnd()*6.28});
+  }
+  var KEEP = 4, ORDER = [9,0,8,1,7,2,6,3,5], SHOTS = [], O = {x:300, y:470}, arrG = $('aArrows');
+  ORDER.forEach(function(si, n){
+    var g = el('g', {opacity:0}, arrG);
+    el('line', {x1:-34, y1:0, x2:26, y2:0, stroke:'#5a2b1a', 'stroke-width':5, 'stroke-linecap':'round'}, g);
+    el('path', {d:'M24 -9 L44 0 L24 9Z', fill:'#5a2b1a'}, g);
+    el('path', {d:'M-34 0 L-46 -9 M-34 0 L-46 9 M-26 0 L-38 -9 M-26 0 L-38 9', stroke:'#c0392b', 'stroke-width':4}, g);
+    SHOTS.push({sun:si, t:23.3 + n*0.5, g:g});
+  });
+  SUNS.forEach(function(s, i){ s.shot = SHOTS.filter(function(x){ return x.sun === i; })[0]; });
+
+  // 稻作：乾枯與豐收
+  var dry = $('aDryCrops'), lush = $('aLushCrops');
+  for (i=0;i<16;i++){
+    var x = 110 + (i%8)*22 + (i>=8 ? 300 : 0), y = 150 + (i%2)*8;
+    el('path', {d:'M'+x+' '+y+' q3 -30 -14 -44'}, dry);
+    el('path', {d:'M'+x+' '+y+' v-46', stroke:'#3f7d3a', 'stroke-width':4, 'stroke-linecap':'round'}, lush);
+    el('ellipse', {cx:x+2, cy:y-54, rx:5, ry:12, fill:'#e8b44c', stroke:'#fff5de', 'stroke-width':2}, lush);
+  }
+
+  // 嫦娥奔月的星空
+  var bStars = [], bs = $('bStars');
+  for (i=0;i<46;i++) bStars.push({e:el('circle', {cx:(rnd()*900).toFixed(0), cy:(rnd()*400).toFixed(0), r:(1+rnd()*2.2).toFixed(1)}, bs), ph:rnd()*6.28, sp:1+rnd()*2});
+  var cStars = [], cs = $('cStars');
+  for (i=0;i<30;i++) cStars.push({e:el('circle', {cx:(rnd()*900).toFixed(0), cy:(rnd()*300).toFixed(0), r:(1+rnd()*2).toFixed(1)}, cs), ph:rnd()*6.28, sp:1+rnd()*2});
+
+  // 桂樹樹冠
+  var can = $('cCanopy'), circ = [];
+  for (i=0;i<46;i++){ var a = rnd()*6.283, r = Math.sqrt(rnd()); circ.push([370 + Math.cos(a)*r*260, 180 + Math.sin(a)*r*120, 40 + rnd()*28]); }
+  var og = el('g', {fill:'#fff5de'}, can); circ.forEach(function(c){ el('circle', {cx:c[0].toFixed(0), cy:c[1].toFixed(0), r:(c[2]+5).toFixed(0)}, og); });
+  var fg = el('g', {}, can); circ.forEach(function(c, j){ el('circle', {cx:c[0].toFixed(0), cy:c[1].toFixed(0), r:c[2].toFixed(0), fill: j%3 ? '#2f6b4f' : '#3d8560'}, fg); });
+  var flg = el('g', {fill:'#f4c542'}, can);
+  for (i=0;i<130;i++){ a = rnd()*6.283; r = Math.sqrt(rnd()); el('circle', {cx:(370 + Math.cos(a)*r*280).toFixed(0), cy:(180 + Math.sin(a)*r*140).toFixed(0), r:(2.5 + rnd()*3).toFixed(1)}, flg); }
+
+  // 桂花飄落（樹上）
+  var petals = [], pg = $('cPetals');
+  for (i=0;i<26;i++) petals.push({e:el('use', {href:'#osm'}, pg), x0:120 + rnd()*560, off:rnd()*380, sp:40 + rnd()*40, amp:10 + rnd()*20, ph:rnd()*6.28});
+  // 木屑
+  var chips = [], cg = $('cChips');
+  for (i=0;i<4;i++) chips.push({e:el('rect', {x:-4, y:-3, width:8, height:6}, cg), vx:30 + i*22, vy:-120 + i*25});
+
+  // 畫面上飄落的桂花（2D）
+  var petals2d = [], p2 = $('petals2d');
+  for (i=0;i<30;i++){
+    var dv = document.createElement('div'); dv.className = 'petal2d';
+    dv.innerHTML = '<svg viewBox="-10 -10 20 20" width="30" height="30"><use href="#osm" fill="#f4c542"/></svg>';
+    p2.appendChild(dv);
+    petals2d.push({el:dv, x0:rnd()*1080, off:rnd()*2000, sp:110 + rnd()*90, amp:20 + rnd()*40, ph:rnd()*6.28, sc:.6 + rnd()*.8});
+  }
+
+  /* ---------- 時間軸文字 ---------- */
+  var HEAD = [
+    [0, 6.2, '燿翔居家長照機構', '中秋立體故事書'],
+    [6.5, 33.4, '第一回', '后羿射日'],
+    [34, 61.4, '第二回', '嫦娥奔月'],
+    [62, 89.4, '第三回', '吳剛伐桂'],
+    [90, 100.5, '燿翔居家長照機構　敬祝', '中秋快樂']
+  ];
+  var CAPS = [
+    [1.2, 4.8, '燿翔居家長照機構<br>為您說三個中秋故事'],
+    [5.0, 7.6, '翻開故事書——'],
+    [8, 12.8, '很久很久以前，<br>天上同時出現了<b>十個太陽</b>。'],
+    [13, 17.8, '大地被曬得乾裂，莊稼枯死，<br>百姓苦不堪言。'],
+    [18, 22.8, '神射手<b>后羿</b>登上高山，<br>拉開了神弓——'],
+    [23, 27.8, '一口氣射下九個太陽，<br>只留下一個，<br>為大地帶來光明與溫暖。'],
+    [28, 32.8, '王母娘娘感謝后羿，<br>賜給他一顆<b>長生不老的仙藥</b>。'],
+    [33.2, 35.8, '下一個故事：<b>嫦娥奔月</b>'],
+    [36, 40.8, '后羿把仙藥交給妻子<b>嫦娥</b>，<br>請她好好收藏。'],
+    [41, 45.8, '壞人逄蒙趁后羿外出，<br>闖進家裡想搶奪仙藥。'],
+    [46, 50.8, '情急之下，嫦娥吞下仙藥，<br>身子輕飄飄地飛上了天。'],
+    [51, 55.8, '她飛到離人間最近的月亮，<br>住進<b>廣寒宮</b>，有玉兔陪伴。'],
+    [56, 60.8, '后羿望月思妻，擺上鮮果月餅。<br>從此，八月十五<b>賞月團圓</b><br>的習俗流傳至今。'],
+    [61.2, 63.8, '下一個故事：<b>吳剛伐桂</b>'],
+    [64, 68.8, '月宮裡，<br>有一棵高達五百丈的<b>桂花樹</b>。'],
+    [69, 73.8, '<b>吳剛</b>學仙不專心，<br>被罰到月宮砍倒這棵桂樹。'],
+    [74, 78.8, '可是斧頭一砍下去，<br>樹上的傷口馬上又長了回來。'],
+    [79, 83.8, '吳剛日復一日，<br>不停地砍呀砍……'],
+    [84, 88.8, '每到中秋桂花飄香，<br>人們說，那是<br>從月宮飄下來的香氣。'],
+    [89.2, 92.2, '故事說完了，<br>闔上故事書……'],
+    [92.6, 100.5, '月圓人團圓<br>燿翔陪您　<b>安心過中秋</b>']
+  ];
+  var curHead = -1, curCap = -1;
+  function seg(list, t){ for (var i=0;i<list.length;i++){ if (t >= list[i][0] && t < list[i][1]) return i; } return -1; }
+  function fadeOf(item, t){ return P(t, item[0], item[0] + .45) * (1 - P(t, item[1] - .4, item[1])); }
+
+  /* ---------- 立體書 ---------- */
+  var STAND = 56;
+  var SPREADS = [
+    {el:$('spA'), rise:7.0, fold:32.9, pieces:[['aBack',0],['aMid',1],['aVillage',2],['aFront',3]]},
+    {el:$('spB'), rise:35.6, fold:60.9, pieces:[['bBack',0],['bMid',1],['bHouse',2],['bChange',2],['bVillain',3],['bHouyi',-1]]},
+    {el:$('spC'), rise:63.6, fold:88.9, pieces:[['cBack',0],['cGround',1],['cMain',2],['cRabbit',3]]}
+  ];
+  SPREADS.forEach(function(s){ s.pieces = s.pieces.map(function(p){ return {el:$(p[0]), id:p[0], i:p[1]}; }); });
+
+  function popAngle(t, s, i, riseAt){
+    var r0 = riseAt != null ? riseAt : s.rise + i*0.18;
+    var r = ebk(P(t, r0, r0 + 1.0));
+    var f = eio(P(t, s.fold, s.fold + 0.75));
+    return STAND * r * (1 - f);
+  }
+  function setShade(face, v){ face.querySelector('.shade').style.opacity = v.toFixed(3); }
+  function leafAngle(t, a, b){ return -180 * eio(P(t, a, b)); }
+
+  var book = $('book'), cover = $('cover'), leaf1 = $('leaf1'), leaf2 = $('leaf2');
+  var cvF = cover.children[0], cvB = cover.children[1];
+
+  function render(t){
+    // 背景星星
+    stageStars.forEach(function(s){ s.el.style.opacity = (.25 + .6*Math.abs(Math.sin(t*s.sp*.6 + s.ph))).toFixed(2); });
+
+    // 書本姿態
+    var o = eio(P(t, 5, 7)), c = eio(P(t, 90.2, 92.4)), intro = eout(P(t, 0, 1.6));
+    var tilt = lerp(lerp(14, STAND, o), 18, c);
+    var bx = lerp(lerp(-248, 0, o), -248, c);
+    var by = lerp(260, 0, intro) + lerp(-110, 0, o) + lerp(0, -110, c) + Math.sin(t*.9)*5;
+    book.style.transform = 'translate3d(' + bx.toFixed(1) + 'px,' + by.toFixed(1) + 'px,0) rotateX(' + tilt.toFixed(2) + 'deg)';
+    $('shadow').style.opacity = (intro * (.55 + .45*o*(1-c))).toFixed(2);
+
+    // 封面
+    var cov = t < 90 ? -180*o : -180*(1 - c);
+    cover.style.transform = 'translateZ(1px) rotateY(' + cov.toFixed(2) + 'deg)';
+    setShade(cvF, .45*Math.abs(Math.sin(cov*Math.PI/180))); setShade(cvB, .45*Math.abs(Math.sin(cov*Math.PI/180)));
+
+    // 翻頁
+    [[leaf1, 34.0, 35.4, 2], [leaf2, 62.0, 63.4, 3]].forEach(function(L){
+      var ang = leafAngle(t, L[1], L[2]);
+      L[0].style.visibility = (t >= L[1] && t < 90) ? 'visible' : 'hidden';
+      L[0].style.transform = 'translateZ(' + L[3] + 'px) rotateY(' + ang.toFixed(2) + 'deg)';
+      var sh = .4*Math.abs(Math.sin(ang*Math.PI/180));
+      setShade(L[0].children[0], sh); setShade(L[0].children[1], sh);
+    });
+
+    // 立體頁面
+    SPREADS.forEach(function(s){
+      var vis = t >= s.rise - .05 && t < s.fold + .9;
+      s.el.style.visibility = vis ? 'visible' : 'hidden';
+      if (!vis) return;
+      s.pieces.forEach(function(p){
+        var ang = p.id === 'bHouyi' ? popAngle(t, s, 0, 56.2) : popAngle(t, s, p.i);
+        p.el.style.transform = 'translateZ(.6px) rotateX(' + (-ang).toFixed(2) + 'deg)' + (EXTRA[p.id] ? EXTRA[p.id](t) : '');
+        if (p.id === 'bHouyi') p.el.style.visibility = t >= 56.2 ? 'visible' : 'hidden';
+      });
+    });
+    if (t >= 6.9 && t < 34) storyA(t);
+    if (t >= 35.5 && t < 62) storyB(t);
+    if (t >= 63.5 && t < 90) storyC(t);
+
+    // 畫面桂花
+    var pe = P(t, 84, 85.5) * (1 - P(t, 99.4, 100));
+    petals2d.forEach(function(p){
+      if (pe <= 0){ p.el.style.opacity = 0; return; }
+      var y = ((t*p.sp + p.off) % 2000) - 40, x = p.x0 + Math.sin(t*.9 + p.ph)*p.amp;
+      p.el.style.transform = 'translate(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px) rotate(' + ((t*60 + p.ph*57) % 360).toFixed(0) + 'deg) scale(' + p.sc.toFixed(2) + ')';
+      p.el.style.opacity = (pe * .9).toFixed(2);
+    });
+
+    // 標題與旁白
+    var h = seg(HEAD, t);
+    if (h !== curHead){ curHead = h; $('kicker').textContent = h >= 0 ? HEAD[h][2] : ''; $('title').textContent = h >= 0 ? HEAD[h][3] : ''; }
+    $('head').style.opacity = h >= 0 ? fadeOf(HEAD[h], t).toFixed(3) : 0;
+    var ci = seg(CAPS, t);
+    if (ci !== curCap){ curCap = ci; $('capT').innerHTML = ci >= 0 ? CAPS[ci][2] : ''; }
+    $('capT').style.opacity = ci >= 0 ? fadeOf(CAPS[ci], t).toFixed(3) : 0;
+    $('cap').style.opacity = (P(t, .9, 1.5)).toFixed(3);
+  }
+
+  /* 各頁面的附加位移 */
+  var EXTRA = {
+    bChange: function(t){
+      var a = eio(P(t, 46.4, 50.6));
+      var tx = lerp(0, 215, a), ty = lerp(0, -470, a) + Math.sin(t*2)*4*(0.3 + a), sc = lerp(1, .42, a);
+      return ' translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ') rotate(' + (Math.sin(t*1.5)*1.5).toFixed(2) + 'deg)';
+    },
+    bVillain: function(t){
+      var tx = lerp(320, 0, eout(P(t, 41.1, 42.3))) + lerp(0, 300, eio(P(t, 46.6, 47.8)));
+      return ' translateX(' + tx.toFixed(1) + 'px)';
+    }
+  };
+
+  function storyA(t){
+    var O2 = O;
+    SUNS.forEach(function(s){
+      var dx = 0, dy = 0, sc = s.s*(1 + .05*Math.sin(t*6 + s.ph)), op = 1, rot = 0;
+      if (s.shot){
+        var hit = s.shot.t + .45, f = P(t, hit, hit + 1.3);
+        if (t >= hit){ sc *= 1 + .3*(1 - P(t, hit, hit + .3)); }
+        dx = f*30; dy = eio(f)*460; rot = f*120; op = 1 - P(t, hit + .5, hit + 1.3);
+      }
+      s.g.setAttribute('transform', 'translate(' + (s.x + dx).toFixed(1) + ' ' + (s.y + dy).toFixed(1) + ') scale(' + sc.toFixed(3) + ') rotate(' + rot.toFixed(1) + ')');
+      s.g.setAttribute('opacity', op.toFixed(3));
+      s.rays.setAttribute('transform', 'rotate(' + ((t*25 + s.ph*57) % 360).toFixed(1) + ')');
+    });
+    SHOTS.forEach(function(sh){
+      var u = P(t, sh.t, sh.t + .45), S = SUNS[sh.sun];
+      if (t < sh.t || t > sh.t + .45){ sh.g.setAttribute('opacity', 0); return; }
+      var x = lerp(O2.x, S.x, u), y = lerp(O2.y, S.y, u), ang = Math.atan2(S.y - O2.y, S.x - O2.x)*180/Math.PI;
+      sh.g.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + ang.toFixed(1) + ')');
+      sh.g.setAttribute('opacity', 1);
+    });
+    $('aHot').setAttribute('opacity', (1 - P(t, 27.6, 29.2)).toFixed(3));
+    $('aLush').setAttribute('opacity', P(t, 28, 29.8).toFixed(3));
+    var joy = P(t, 28.2, 28.9);
+    $('aJoy').setAttribute('opacity', joy.toFixed(3)); $('aSad').setAttribute('opacity', (1 - joy).toFixed(3));
+    $('aJoy').setAttribute('transform', 'translate(0 ' + (-Math.abs(Math.sin(t*5))*8*joy).toFixed(1) + ')');
+
+    // 拉弓
+    var pull = eio(P(t, 19.2, 20.6)), snap = 1;
+    SHOTS.forEach(function(sh){ var d = t - sh.t; if (d >= 0 && d < .42) snap = Math.min(snap, d < .06 ? 0 : eio((d - .06)/.36)); });
+    pull *= snap; pull *= 1 - P(t, 27.9, 28.4);
+    var sx = lerp(232.8, 184, pull), sy = lerp(124.3, 156, pull);
+    $('aString').setAttribute('d', 'M181 44 L' + sx.toFixed(1) + ' ' + sy.toFixed(1) + ' L284 204');
+    var ax = .839, ay = -.544, L = 132, show = pull > .25 && t < 28;
+    $('aNock').setAttribute('opacity', show ? 1 : 0);
+    var ex = sx + ax*L, ey = sy + ay*L;
+    $('aNockL').setAttribute('x1', sx.toFixed(1)); $('aNockL').setAttribute('y1', sy.toFixed(1));
+    $('aNockL').setAttribute('x2', ex.toFixed(1)); $('aNockL').setAttribute('y2', ey.toFixed(1));
+    $('aNockH').setAttribute('d', 'M' + (ex + ax*18).toFixed(1) + ' ' + (ey + ay*18).toFixed(1) + ' L' + (ex - ay*8).toFixed(1) + ' ' + (ey + ax*8).toFixed(1) + ' L' + (ex + ay*8).toFixed(1) + ' ' + (ey - ax*8).toFixed(1) + 'Z');
+
+    // 仙藥
+    var e = P(t, 28.4, 29.4);
+    $('aElixir').setAttribute('opacity', e.toFixed(3));
+    $('aElixir').setAttribute('transform', 'translate(96 ' + (40 + Math.sin(t*2)*6).toFixed(1) + ') scale(' + (.8 + .6*eout(e)).toFixed(3) + ')');
+    $('aSpark').setAttribute('transform', 'rotate(' + ((t*40) % 360).toFixed(1) + ') scale(' + (1 + .12*Math.sin(t*4)).toFixed(3) + ')');
+  }
+
+  function storyB(t){
+    bStars.forEach(function(s){ s.e.setAttribute('opacity', (.3 + .7*Math.abs(Math.sin(t*s.sp*.7 + s.ph))).toFixed(2)); });
+    $('bHalo').setAttribute('r', (230 + Math.sin(t*1.6)*12).toFixed(1));
+    var w = Math.sin(t*2.2)*6;
+    $('ceRibL').setAttribute('transform', 'rotate(' + w.toFixed(2) + ' 88 96)');
+    $('ceRibR').setAttribute('transform', 'rotate(' + (-w).toFixed(2) + ' 132 96)');
+    $('cePill').setAttribute('opacity', ((1 - P(t, 46.1, 46.5)) * (.75 + .25*Math.sin(t*5))).toFixed(3));
+    $('bVillain').style.opacity = (P(t, 41.1, 41.6) * (1 - P(t, 46.8, 47.8))).toFixed(3);
+    var rb = P(t, 51.3, 52.2);
+    $('bRabbit').setAttribute('opacity', rb.toFixed(3));
+    $('bRabbit').setAttribute('transform', 'translate(515 ' + (292 - Math.abs(Math.sin(t*3.2))*10*rb).toFixed(1) + ')');
+    $('bLant1').setAttribute('transform', 'translate(92 164) rotate(' + (Math.sin(t*1.8)*6).toFixed(2) + ')');
+    $('bLant2').setAttribute('transform', 'translate(248 164) rotate(' + (Math.sin(t*1.8 + 1)*6).toFixed(2) + ')');
+    $('bSmoke').setAttribute('transform', 'translate(' + (Math.sin(t*1.3)*3).toFixed(1) + ' 0)');
+  }
+
+  function storyC(t){
+    cStars.forEach(function(s){ s.e.setAttribute('opacity', (.3 + .7*Math.abs(Math.sin(t*s.sp*.7 + s.ph))).toFixed(2)); });
+    $('cWugang').setAttribute('opacity', P(t, 69, 69.8).toFixed(3));
+    var start = 69.8, per = 1.6, ang = 0, dtHit = 99;
+    if (t >= start){
+      var u = ((t - start) % per) / per;
+      if (u < .55) ang = lerp(0, 110, eio(u/.55));
+      else if (u < .7) ang = lerp(110, -4, ein((u - .55)/.15));
+      else ang = lerp(-4, 0, eout((u - .7)/.3));
+      var n = Math.floor((t - start - .7*per) / per);
+      if (t >= start + .7*per) dtHit = t - (start + n*per + .7*per);
+    }
+    $('cArm').setAttribute('transform', 'rotate(' + ang.toFixed(2) + ' 552 380)');
+    var notch = dtHit < .15 ? 1 : 1 - P(dtHit, .3, 1.1);
+    $('cNotch').setAttribute('opacity', notch.toFixed(3));
+    $('cHeal').setAttribute('opacity', (dtHit < 1.2 ? Math.sin(Math.PI*P(dtHit, .3, 1.1)) : 0).toFixed(3));
+    chips.forEach(function(c){
+      if (dtHit > .55){ c.e.setAttribute('opacity', 0); return; }
+      var x = 410 + c.vx*dtHit, y = 438 + c.vy*dtHit + 300*dtHit*dtHit;
+      c.e.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + (dtHit*400).toFixed(0) + ')');
+      c.e.setAttribute('opacity', (1 - dtHit/.55).toFixed(3));
+    });
+    petals.forEach(function(p){
+      var y = 150 + ((t*p.sp + p.off) % 380), x = p.x0 + Math.sin(t*1.3 + p.ph)*p.amp;
+      p.e.setAttribute('transform', 'translate(' + x.toFixed(1) + ' ' + y.toFixed(1) + ') rotate(' + ((t*70 + p.ph*57) % 360).toFixed(0) + ')');
+      p.e.setAttribute('opacity', (1 - P(y, 470, 530)).toFixed(3));
+    });
+    $('cPestle').setAttribute('transform', 'translate(0 ' + (-Math.abs(Math.sin(t*3.4))*16).toFixed(1) + ')');
+  }
+
+  /* ---------- 縮放與播放 ---------- */
+  function fit(){ var s = Math.min(innerWidth/1080, innerHeight/1920); $('stage').style.setProperty('--s', s.toFixed(4)); }
+  addEventListener('resize', fit); fit();
+
+  if (location.search.indexOf('capture') >= 0){
+    document.documentElement.classList.add('capture');
+    window.__seek = function(t){ render(t); return 1; };
+    render(0);
+  } else {
+    var start = performance.now(), paused = false, cur = 0, seek = $('seek');
+    function jump(t){ start = performance.now() - t*1000; cur = t; render(t); }
+    function loop(now){
+      if (!paused){ cur = (now - start)/1000; if (cur > D + 2){ jump(0); } render(Math.min(cur, D)); seek.value = Math.min(cur, D).toFixed(1); }
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+    $('bPlay').onclick = function(){ paused = !paused; this.textContent = paused ? '播放' : '暫停'; if (!paused) jump(cur); };
+    Array.prototype.forEach.call(document.querySelectorAll('.ui [data-t]'), function(b){ b.onclick = function(){ jump(parseFloat(b.dataset.t)); }; });
+    seek.oninput = function(){ jump(parseFloat(seek.value)); };
+  }
+})();
+</script>
+</body>
+</html>
