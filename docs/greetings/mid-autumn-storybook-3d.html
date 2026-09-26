@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>中秋 3D 故事書</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#e8b44c; --gold-2:#ffe3a3; --ink:#fff8e7;
+  --serif:'Noto Serif TC','WenQuanYi Zen Hei','PingFang TC','Microsoft JhengHei',serif;
+  --sans:'Noto Sans TC','WenQuanYi Zen Hei','PingFang TC','Microsoft JhengHei',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#050817;overflow:hidden}
+body{display:flex;align-items:center;justify-content:center;font-family:var(--sans);color:var(--ink)}
+.stage{position:relative;width:1080px;height:1920px;overflow:hidden;flex:none;transform:scale(var(--s,1));pointer-events:none;
+  background:radial-gradient(ellipse 820px 780px at 50% 54%,#3b2f63 0%,#1b2150 48%,#0a0f2e 100%)}
+.star{position:absolute;border-radius:50%;background:#fff}
+.glow{position:absolute;left:40px;top:560px;width:1000px;height:900px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,206,120,.24),rgba(255,206,120,0))}
+#gl{position:absolute;left:0;top:0;width:1080px;height:1920px}
+.head{position:absolute;top:110px;left:0;right:0;text-align:center}
+.kicker{font-size:42px;letter-spacing:.32em;color:var(--gold);font-weight:500;height:60px}
+.title{font-family:var(--serif);font-weight:900;font-size:116px;line-height:1.2;letter-spacing:.14em;color:var(--gold-2);margin-top:10px;
+  text-shadow:0 6px 28px rgba(0,0,0,.5),0 0 36px rgba(255,210,120,.3);white-space:nowrap}
+.cap{position:absolute;left:56px;right:56px;top:1480px;height:330px;display:flex;align-items:center;justify-content:center;text-align:center;
+  padding:26px 44px;border-radius:36px;background:rgba(9,13,40,.66);border:2px solid rgba(232,180,76,.55);box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.cap-t{font-size:60px;line-height:1.5;font-weight:500;letter-spacing:.04em}
+.cap-t b{color:var(--gold-2);font-weight:700}
+.foot{position:absolute;left:0;right:0;bottom:44px;text-align:center;font-size:32px;letter-spacing:.3em;color:var(--gold);opacity:.8}
+.petal2d{position:absolute;left:0;top:0;width:30px;height:30px}
+.ui{position:fixed;left:0;right:0;bottom:0;padding:12px 16px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:center;
+  font:15px/1 var(--sans);color:#cbd3ea;background:linear-gradient(transparent,rgba(0,0,0,.65));z-index:9}
+.ui button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font-size:15px}
+.ui button:hover{background:rgba(255,255,255,.24)}
+.ui input{flex:1 1 100%;accent-color:#e8b44c}
+html.capture .ui{display:none}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <g id="osm"><circle cx="0" cy="-4" r="3.6"/><circle cx="4" cy="0" r="3.6"/><circle cx="0" cy="4" r="3.6"/><circle cx="-4" cy="0" r="3.6"/></g>
+</defs></svg>
+<div class="stage" id="stage">
+  <div id="stars"></div>
+  <div class="glow"></div>
+  <canvas id="gl" width="1080" height="1920"></canvas>
+  <div class="head" id="head"><div class="kicker" id="kicker"></div><div class="title" id="title"></div></div>
+  <div id="petals2d"></div>
+  <div class="cap" id="cap"><div class="cap-t" id="capT"></div></div>
+  <div class="foot">臺北市私立燿翔居家長照機構</div>
+</div>
+<div class="ui">
+  <button id="bPlay">暫停</button>
+  <button data-t="0">封面</button><button data-t="6.5">后羿射日</button><button data-t="34">嫦娥奔月</button><button data-t="62">吳剛伐桂</button>
+  <input type="range" id="seek" min="0" max="100" step="0.1" value="0">
+</div>
+
+<script type="module">
+import * as THREE from './vendor/three.module.min.js';
+
+const D = 100; window.__DURATION = D;
+const $ = id => document.getElementById(id);
+let seed = 2026;
+const rnd = () => (seed = (seed * 1664525 + 1013904223) % 4294967296) / 4294967296;
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const P = (t, a, b) => clamp((t - a) / (b - a), 0, 1);
+const eio = x => x < .5 ? 4*x*x*x : 1 - Math.pow(-2*x + 2, 3) / 2;
+const eout = x => 1 - Math.pow(1 - x, 3);
+const ein = x => x*x*x;
+const ebk = x => { const c1 = 1.5, c3 = c1 + 1; return 1 + c3*Math.pow(x - 1, 3) + c1*Math.pow(x - 1, 2); };
+const lerp = (a, b, x) => a + (b - a)*x;
+const V = (x, y, z) => new THREE.Vector3(x, y, z);
+const Y = V(0, 1, 0);
+
+/* 字型先載入（封面貼圖要用） */
+try { await Promise.race([
+  Promise.all(['900 120px "Noto Serif TC"', '500 40px "Noto Sans TC"'].map(f => document.fonts.load(f))),
+  new Promise(r => setTimeout(r, 6000))]); } catch (e) {}
+
+/* ================= 渲染器與場景 ================= */
+const renderer = new THREE.WebGLRenderer({canvas: $('gl'), antialias: true, alpha: true, preserveDrawingBuffer: true});
+renderer.setPixelRatio(1); renderer.setSize(1080, 1920, false);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.12;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(38, 1080/1920, .1, 200);
+const CAM = V(0, 14.2, 24.5), LOOK = V(0, 2.2, -0.9);
+
+scene.add(new THREE.HemisphereLight('#c9d3ff', '#3b2a4a', 1.15));
+const key = new THREE.DirectionalLight('#ffe7c4', 2.6);
+key.position.set(-6, 14, 10); key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+Object.assign(key.shadow.camera, {left: -9, right: 9, top: 9, bottom: -9, near: 1, far: 45});
+key.shadow.bias = -0.0006; key.shadow.normalBias = 0.03;
+scene.add(key);
+const rim = new THREE.DirectionalLight('#8fa6ff', .9); rim.position.set(8, 6, -6); scene.add(rim);
+const front = new THREE.DirectionalLight('#fff0dc', .55); front.position.set(0, 4, 14); scene.add(front);
+const catcher = new THREE.Mesh(new THREE.PlaneGeometry(60, 60), new THREE.ShadowMaterial({opacity: .38}));
+catcher.rotation.x = -Math.PI/2; catcher.position.y = -0.5; catcher.receiveShadow = true; scene.add(catcher);
+
+/* ================= 共用工具 ================= */
+const G = {
+  sph: new THREE.SphereGeometry(1, 28, 18), cyl: new THREE.CylinderGeometry(1, 1, 1, 18),
+  cone: new THREE.ConeGeometry(1, 1, 20), cone6: new THREE.ConeGeometry(1, 1, 6), box: new THREE.BoxGeometry(1, 1, 1),
+  sleeve: new THREE.CylinderGeometry(1.7, .9, 1, 16), capHair: new THREE.SphereGeometry(1, 28, 16, 0, Math.PI*2, 0, Math.PI*.56),
+  dodec: new THREE.DodecahedronGeometry(1, 0)
+};
+const mat = (color, o) => new THREE.MeshStandardMaterial(Object.assign({color, roughness: .62, metalness: 0}, o || {}));
+const MC = {}; const M = c => MC[c] || (MC[c] = mat(c));
+function add(parent, geo, material, p, s, r, noShadow){
+  const m = new THREE.Mesh(geo, material);
+  if (p) m.position.set(p[0], p[1], p[2]);
+  if (s != null){ if (typeof s === 'number') m.scale.setScalar(s); else m.scale.set(s[0], s[1], s[2]); }
+  if (r) m.rotation.set(r[0], r[1], r[2]);
+  m.castShadow = !noShadow; m.receiveShadow = true; parent.add(m); return m;
+}
+function limb(m, a, b, r){
+  const d = new THREE.Vector3().subVectors(b, a), len = d.length() || 1e-4;
+  m.position.copy(a).addScaledVector(d, .5);
+  m.quaternion.setFromUnitVectors(Y, d.multiplyScalar(1/len));
+  m.scale.set(r, len, r);
+}
+function canvasTex(w, h, draw){
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  draw(c.getContext('2d'), w, h);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; return t;
+}
+const GLOW = canvasTex(128, 128, (g, w) => {
+  const r = g.createRadialGradient(w/2, w/2, 0, w/2, w/2, w/2);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.35, 'rgba(255,255,255,.45)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, w, w);
+});
+GLOW.colorSpace = THREE.NoColorSpace;
+function glow(parent, color, size, p, opacity = 1){
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({map: GLOW, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false}));
+  s.scale.set(size, size, 1); s.position.set(p[0], p[1], p[2]); parent.add(s); return s;
+}
+function roundedTop(W, H, r){
+  const s = new THREE.Shape();
+  s.moveTo(-W/2, 0); s.lineTo(-W/2, H - r); s.quadraticCurveTo(-W/2, H, -W/2 + r, H);
+  s.lineTo(W/2 - r, H); s.quadraticCurveTo(W/2, H, W/2, H - r); s.lineTo(W/2, 0); s.lineTo(-W/2, 0);
+  return s;
+}
+function backdrop(parent, draw, o = {}){
+  const W = 9.3, H = o.h || 5.7;
+  const tex = canvasTex(1024, Math.round(1024*H/W), draw);
+  const geo = new THREE.ShapeGeometry(roundedTop(W, H, .9), 24);
+  const uv = geo.attributes.uv, pos = geo.attributes.position;
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, (pos.getX(i) + W/2)/W, pos.getY(i)/H);
+  const m = new THREE.MeshStandardMaterial({map: tex, emissive: '#ffffff', emissiveMap: tex, emissiveIntensity: .75, roughness: 1, transparent: !!o.transparent});
+  const mesh = new THREE.Mesh(geo, m); mesh.receiveShadow = true; parent.add(mesh);
+  if (!o.noEdge){
+    const e = new THREE.Mesh(new THREE.ShapeGeometry(roundedTop(W + .18, H + .09, .98), 24), M('#fff4dc'));
+    e.position.z = -.03; e.receiveShadow = true; parent.add(e);
+    const back = new THREE.Mesh(new THREE.ShapeGeometry(roundedTop(W + .18, H + .09, .98), 24), M('#e9d9b6'));
+    back.position.z = -.06; back.rotation.y = Math.PI; back.position.x = 0; parent.add(back);
+  }
+  return mesh;
+}
+function skyGrad(stops, stars){
+  return (g, w, h) => {
+    const gr = g.createLinearGradient(0, 0, 0, h);
+    stops.forEach(s => gr.addColorStop(s[0], s[1])); g.fillStyle = gr; g.fillRect(0, 0, w, h);
+    if (stars){ for (let i = 0; i < stars; i++){ g.fillStyle = `rgba(255,255,255,${.4 + rnd()*.6})`; g.beginPath(); g.arc(rnd()*w, rnd()*h*.8, .8 + rnd()*2.2, 0, 7); g.fill(); } }
+  };
+}
+
+/* ================= 角色 ================= */
+const SKIN = M('#f7d4b8');
+function human(o){
+  const g = new THREE.Group(), H = {g};
+  const robe = M(o.robe), hair = M(o.hair || '#2a1f2e');
+  if (o.dress){
+    const prof = [[0,0],[.56,0],[.52,.22],[.4,.66],[.28,1.0],[.18,1.13],[0,1.15]];
+    add(g, new THREE.LatheGeometry(prof.map(p => new THREE.Vector2(p[0], p[1])), 32), robe);
+    add(g, new THREE.LatheGeometry([[.001,.02],[.3,.02],[.24,.6],[.14,1.0],[.001,1.02]].map(p => new THREE.Vector2(p[0], p[1])), 24), M(o.robe2 || o.robe), [0, 0, .24], [1, 1, .35]);
+  } else {
+    const pants = M(o.pants || '#3a2b35');
+    H.legL = add(g, G.cyl, pants); limb(H.legL, V(.14, .5, 0), V(.17, .1, .02), .1);
+    H.legR = add(g, G.cyl, pants); limb(H.legR, V(-.14, .5, 0), V(-.17, .1, .02), .1);
+    add(g, G.sph, M('#2a2226'), [.17, .07, .07], [.12, .08, .17]);
+    add(g, G.sph, M('#2a2226'), [-.17, .07, .07], [.12, .08, .17]);
+    const prof = [[0,.4],[.42,.4],[.38,.6],[.31,.96],[.2,1.12],[0,1.15]];
+    add(g, new THREE.LatheGeometry(prof.map(p => new THREE.Vector2(p[0], p[1])), 28), robe);
+  }
+  add(g, new THREE.TorusGeometry(1, .14, 10, 28), M(o.belt || '#e8b44c'), [0, o.dress ? .93 : .86, 0], [o.dress ? .29 : .34, o.dress ? .29 : .34, .3], [Math.PI/2, 0, 0]);
+  add(g, new THREE.TorusGeometry(1, .25, 10, 24), M(o.robe2 || o.robe), [0, 1.12, 0], [.17, .17, .17], [Math.PI/2, 0, 0]);
+  const head = new THREE.Group(); head.position.set(0, 1.47, 0); g.add(head); H.head = head;
+  add(head, G.sph, SKIN, [0, 0, 0], .35);
+  add(head, G.sph, M('#1d1620'), [.12, .02, .31], [.045, .06, .03]);
+  add(head, G.sph, M('#1d1620'), [-.12, .02, .31], [.045, .06, .03]);
+  add(head, G.sph, M('#f29a9a'), [.2, -.08, .28], [.06, .035, .02], null, true);
+  add(head, G.sph, M('#f29a9a'), [-.2, -.08, .28], [.06, .035, .02], null, true);
+  add(head, G.sph, M('#d97a6a'), [0, -.13, .33], [.05, .018, .02], null, true);
+  add(head, G.capHair, hair, [0, .02, -.03], .37, [-.55, 0, 0]);
+  if (o.style === 'topknot'){ add(head, G.sph, hair, [0, .38, -.08], .13); }
+  if (o.style === 'buns'){ add(head, G.sph, hair, [.25, .27, -.05], .15); add(head, G.sph, hair, [-.25, .27, -.05], .15); add(head, G.sph, M('#e8b44c'), [.14, .34, .06], .04); }
+  if (o.style === 'hat'){ add(head, G.cone, M('#d8b263'), [0, .42, 0], [.62, .3, .62]); add(head, G.sph, hair, [0, .3, -.1], .1); }
+  if (o.style === 'helmet'){ add(head, G.capHair, M('#4a3a5c'), [0, .05, 0], .4, [-.3, 0, 0]); add(head, G.cone6, M('#c8d0dc'), [0, .46, 0], [.06, .2, .06]); }
+  if (o.band) add(head, new THREE.TorusGeometry(1, .08, 8, 28), M(o.band), [0, .1, -.02], [.36, .36, .36], [Math.PI/2 - .3, 0, 0]);
+  const sleeveGeo = o.dress ? G.sleeve : G.cyl, sleeveMat = M(o.sleeve || o.robe);
+  H.shL = V(.3, 1.06, 0); H.shR = V(-.3, 1.06, 0);
+  H.armL = add(g, sleeveGeo, sleeveMat); H.armR = add(g, sleeveGeo, sleeveMat);
+  H.handL = add(g, G.sph, SKIN, [0, 0, 0], .085); H.handR = add(g, G.sph, SKIN, [0, 0, 0], .085);
+  H.setArms = (hl, hr) => {
+    if (hl){ limb(H.armL, H.shL, hl, o.dress ? .06 : .085); H.handL.position.copy(hl); }
+    if (hr){ limb(H.armR, H.shR, hr, o.dress ? .06 : .085); H.handR.position.copy(hr); }
+  };
+  H.setArms(V(.4, .6, .06), V(-.4, .6, .06));
+  if (o.scale) g.scale.setScalar(o.scale);
+  return H;
+}
+function rabbit(){
+  const g = new THREE.Group(), w = mat('#fffaf2', {roughness: .9});
+  add(g, G.sph, w, [0, .34, 0], [.42, .33, .34]);
+  add(g, G.sph, w, [.32, .62, 0], .26);
+  add(g, G.sph, w, [.24, 1.0, -.09], [.07, .27, .09], [0, 0, .28]);
+  add(g, G.sph, w, [.32, 1.0, .09], [.07, .27, .09], [0, 0, -.08]);
+  add(g, G.sph, M('#ffc2cf'), [.25, 1.0, -.07], [.035, .18, .05], [0, 0, .28], true);
+  add(g, G.sph, M('#d8384a'), [.5, .68, .13], .04); add(g, G.sph, M('#d8384a'), [.5, .68, -.13], .04);
+  add(g, G.sph, M('#ffadbf'), [.57, .6, 0], .035);
+  add(g, G.sph, w, [-.44, .42, 0], .11);
+  add(g, G.sph, w, [.22, .08, .16], [.14, .07, .09]); add(g, G.sph, w, [.22, .08, -.16], [.14, .07, .09]);
+  return g;
+}
+const CLOUD_M = mat('#fff3de', {emissive: '#3b3048', roughness: .95});
+function cloud(parent, p, s){
+  const g = new THREE.Group();
+  [[0,0,0,.5],[.55,.14,0,.62],[1.15,0,0,.48],[.3,-.1,.22,.45],[.85,-.08,.22,.45],[1.5,-.12,.1,.32],[-.4,-.1,.1,.32]]
+    .forEach(c => add(g, G.sph, CLOUD_M, [c[0], c[1], c[2]], [c[3], c[3]*.78, c[3]*.72]));
+  g.position.set(p[0], p[1], p[2]); g.scale.setScalar(s); parent.add(g); return g;
+}
+function roofGeo(w, d){
+  const s = new THREE.Shape();
+  s.moveTo(-d/2 - .18, .06); s.quadraticCurveTo(-d/2 + .15, .1, -d*.22, .62);
+  s.lineTo(d*.22, .62); s.quadraticCurveTo(d/2 - .15, .1, d/2 + .18, .06);
+  s.lineTo(d/2 + .1, 0); s.lineTo(-d/2 - .1, 0); s.lineTo(-d/2 - .18, .06);
+  const geo = new THREE.ExtrudeGeometry(s, {depth: w, bevelEnabled: false, curveSegments: 12});
+  geo.translate(0, 0, -w/2); geo.rotateY(Math.PI/2); return geo;
+}
+const PYR = new THREE.ConeGeometry(1, 1, 4); PYR.rotateY(Math.PI/4);
+function hipRoof(parent, w, d, h, y, color){
+  const g = new THREE.Group(); g.position.y = y; parent.add(g);
+  add(g, PYR, M(color), [0, h/2, 0], [w*.72, h, d*.72]);
+  add(g, G.box, M(color), [0, .03, 0], [w*1.02, .06, d*1.02]);
+  add(g, G.box, M('#e8b44c'), [0, h*.62, 0], [w*.46, .06, .06]);
+  return g;
+}
+function lantern(parent, p, s){
+  const g = new THREE.Group(); g.position.set(p[0], p[1], p[2]); g.scale.setScalar(s); parent.add(g);
+  add(g, G.cyl, M('#e8b44c'), [0, -.08, 0], [.012, .16, .012]);
+  add(g, G.sph, mat('#e4503a', {emissive: '#ff5a2a', emissiveIntensity: .9}), [0, -.36, 0], [.17, .21, .17]);
+  add(g, G.cyl, M('#e8b44c'), [0, -.17, 0], [.09, .04, .09]); add(g, G.cyl, M('#e8b44c'), [0, -.56, 0], [.09, .04, .09]);
+  glow(g, '#ff9a55', .9, [0, -.36, 0], .55);
+  return g;
+}
+function house(parent, p, s){
+  const g = new THREE.Group(); g.position.set(p[0], p[1], p[2]); g.scale.setScalar(s); parent.add(g);
+  add(g, G.box, M('#efe0c1'), [0, .6, 0], [1.8, 1.2, 1.2]);
+  [[-.84, .64], [.84, .64], [-.84, -.64], [.84, -.64]].forEach(c => add(g, G.cyl, M('#a8322a'), [c[0], .6, c[1]], [.075, 1.2, .075]));
+  add(g, G.box, M('#7a2a22'), [0, .46, .61], [.44, .9, .04]);
+  add(g, G.sph, M('#e8b44c'), [.12, .46, .64], .035);
+  const win = mat('#ffd27a', {emissive: '#ffae3a', emissiveIntensity: .9});
+  add(g, G.box, win, [-.52, .72, .61], [.34, .36, .04]); add(g, G.box, win, [.52, .72, .61], [.34, .36, .04]);
+  hipRoof(g, 2.3, 1.7, .95, 1.2, '#3b3160');
+  add(g, G.box, M('#8a6a3a'), [0, .03, .9], [2.1, .06, .5]);
+  return {g, lanterns: [lantern(g, [-.62, 1.2, .8], 1), lantern(g, [.62, 1.2, .8], 1)]};
+}
+function pavilion(parent, p, s, wall = '#f3e3c2', roof = '#c9a24a'){
+  const g = new THREE.Group(); g.position.set(p[0], p[1], p[2]); g.scale.setScalar(s); parent.add(g);
+  add(g, G.box, M(wall), [0, .38, 0], [1.3, .76, .8]);
+  [-.58, -.2, .2, .58].forEach(x => add(g, G.cyl, M('#b83a30'), [x, .38, .42], [.05, .76, .05]));
+  hipRoof(g, 1.75, 1.2, .55, .76, roof);
+  add(g, G.box, M(wall), [0, 1.35, 0], [.8, .5, .5]);
+  hipRoof(g, 1.15, .85, .5, 1.6, roof);
+  add(g, G.cone6, M('#ffe08a'), [0, 2.25, 0], [.06, .2, .06]);
+  return g;
+}
+function arrowMesh(parent){
+  const g = new THREE.Group(); parent.add(g);
+  add(g, G.cyl, M('#6b3a1f'), [0, 0, 0], [.022, .9, .022]);
+  add(g, G.cone, M('#c8d0dc'), [0, .5, 0], [.05, .14, .05]);
+  add(g, G.box, M('#c0392b'), [0, -.38, 0], [.01, .14, .09]); add(g, G.box, M('#c0392b'), [0, -.38, 0], [.09, .14, .01]);
+  return g;
+}
+
+/* ================= 書本 ================= */
+const PW = 4.8, PD = 6.4, T = .26, B = .09, OV = .12;
+const book = new THREE.Group(); scene.add(book);
+const boardMat = mat('#8e231d', {roughness: .5}), pageMat = mat('#f4e7c8', {roughness: .92});
+const pageSide = mat('#e8d6ac', {roughness: 1});
+add(book, G.box, boardMat, [PW/2 + OV/2, -T - B/2, 0], [PW + OV, B, PD + 2*OV]);
+add(book, G.box, [pageSide, pageSide, pageMat, pageSide, pageSide, pageSide], [PW/2, -T/2, 0], [PW - .02, T, PD]);
+const coverPivot = new THREE.Group(); book.add(coverPivot);
+add(coverPivot, G.box, [pageSide, pageSide, pageMat, pageMat, pageSide, pageSide], [PW/2, T/2, 0], [PW - .02, T, PD]);
+add(coverPivot, G.box, boardMat, [PW/2 + OV/2, T + B/2, 0], [PW + OV, B, PD + 2*OV]);
+const coverTex = canvasTex(1000, 1340, (g, w, h) => {
+  const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#b0332a'); gr.addColorStop(1, '#701a14');
+  g.fillStyle = gr; g.fillRect(0, 0, w, h);
+  g.strokeStyle = '#e8b44c'; g.lineWidth = 8; g.strokeRect(50, 50, w - 100, h - 100);
+  g.lineWidth = 3; g.strokeRect(72, 72, w - 144, h - 144);
+  const mg = g.createRadialGradient(w/2 - 30, 300, 10, w/2, 330, 170); mg.addColorStop(0, '#fffbe8'); mg.addColorStop(1, '#efcf7e');
+  g.fillStyle = mg; g.beginPath(); g.arc(w/2, 330, 170, 0, 7); g.fill(); g.lineWidth = 8; g.stroke();
+  g.fillStyle = 'rgba(160,125,60,.45)'; g.beginPath(); g.ellipse(w/2 + 20, 380, 70, 45, 0, 0, 7); g.fill(); g.beginPath(); g.arc(w/2 - 45, 340, 32, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(w/2 - 52, 285, 11, 34, -.2, 0, 7); g.fill(); g.beginPath(); g.ellipse(w/2 - 34, 284, 11, 34, .2, 0, 7); g.fill();
+  g.textAlign = 'center'; g.fillStyle = '#ffe3a3';
+  g.font = '900 300px "Noto Serif TC", serif'; g.fillText('中秋', w/2, 830);
+  g.font = '900 110px "Noto Serif TC", serif'; g.fillText('3D 故事書', w/2, 1000);
+  g.fillStyle = '#e8b44c'; g.font = '500 48px "Noto Sans TC", sans-serif'; g.fillText('后羿射日・嫦娥奔月・吳剛伐桂', w/2, 1110);
+  g.fillStyle = '#ffe3a3'; g.font = '500 52px "Noto Sans TC", sans-serif'; g.fillText('燿翔居家長照機構', w/2, 1230);
+});
+const coverFace = new THREE.Mesh(new THREE.PlaneGeometry(PW + OV - .06, PD + 2*OV - .06), new THREE.MeshStandardMaterial({map: coverTex, roughness: .5}));
+coverFace.rotation.x = -Math.PI/2; coverFace.position.set(PW/2 + OV/2, T + B + .003, 0); coverFace.receiveShadow = true; coverPivot.add(coverFace);
+function makeLeaf(h){
+  const piv = new THREE.Group(); piv.position.y = h; book.add(piv);
+  add(piv, G.box, pageMat, [PW/2, 0, 0], [PW - .05, .018, PD - .05]); piv.visible = false; return piv;
+}
+const leaf1 = makeLeaf(.014), leaf2 = makeLeaf(.036);
+
+/* 立體頁面：每個元件從書頁「站起來」 */
+function makeStory(){ const root = new THREE.Group(); root.visible = false; book.add(root); return {root, pieces: []}; }
+function piece(S, x, z, i, riseAt){
+  const outer = new THREE.Group(); outer.position.set(x, .02, z); S.root.add(outer);
+  const g = new THREE.Group(); outer.add(g); S.pieces.push({g, i, riseAt}); return g;
+}
+
+/* ================= 第一回 后羿射日 ================= */
+const A = makeStory(); A.rise = 7.0; A.fold = 32.9;
+const aSky = piece(A, 0, -2.75, 0);
+const aCool = backdrop(aSky, skyGrad([[0, '#5fa6da'], [.62, '#bfe0ee'], [1, '#f6dca6']]));
+const aHot = backdrop(aSky, skyGrad([[0, '#ff6d2a'], [.55, '#ffc24f'], [1, '#f2913f']]), {transparent: true, noEdge: true});
+aHot.position.z = .01;
+const SUNS = [];
+for (let i = 0; i < 10; i++){
+  const g = new THREE.Group(); g.position.set(-3.9 + i*.867, 3.25 + 1.55*Math.sin(Math.PI*i/9), .55); aSky.add(g);
+  const body = new THREE.Mesh(G.sph, new THREE.MeshBasicMaterial({color: '#ffcf2a', transparent: true, toneMapped: false})); body.scale.setScalar(.36); g.add(body);
+  const rays = new THREE.Group(); g.add(rays);
+  const rm = new THREE.MeshBasicMaterial({color: '#ff9a1a', transparent: true, toneMapped: false});
+  for (let k = 0; k < 12; k++){ const a = k/12*Math.PI*2; const c = new THREE.Mesh(G.cone, rm); c.scale.set(.07, .22, .07); c.position.set(Math.cos(a)*.54, Math.sin(a)*.54, 0); c.rotation.z = a - Math.PI/2; rays.add(c); }
+  const gl = glow(g, '#ffcc55', 2.3, [0, 0, -.05], .85);
+  SUNS.push({g, body, rays, rm, gl, base: g.position.clone(), s: .85 + (i % 3)*.1, ph: rnd()*6.28});
+}
+// 崑崙山
+const aMts = piece(A, 0, -2.2, 1);
+[[-3.4, 1.4, 2.2], [-1.6, 1.7, 3.1], [.2, 1.5, 2.5], [1.9, 1.7, 3.0], [3.6, 1.3, 2.1]].forEach(m => {
+  add(aMts, G.cone6, M('#7a4a35'), [m[0], m[2]/2, 0], [m[1], m[2], m[1]*.7]);
+  add(aMts, G.cone6, M('#fff5e6'), [m[0], m[2] - m[2]*.14, 0], [m[1]*.29, m[2]*.28, m[1]*.29*.7]);
+});
+// 大地：乾裂 → 豐收
+const aLand = piece(A, 0, -.9, 2);
+const duneMat = mat('#c08a52', {roughness: .95});
+[[-3, 2.0], [-.6, 2.4], [2.2, 2.3]].forEach(d => add(aLand, G.sph, duneMat, [d[0], 0, 0], [d[1], .42, .9]));
+const crops = [];
+const stalkMat = mat('#8a5a2b'), headMat = mat('#9a6a3a');
+for (let i = 0; i < 16; i++){
+  const x = -3.4 + (i % 8)*.32 + (i >= 8 ? 3.6 : 0), z = .2 + ((i*7) % 3)*.14;
+  const piv = new THREE.Group(); piv.position.set(x, .18, z); aLand.add(piv);
+  add(piv, G.cyl, stalkMat, [0, .28, 0], [.025, .56, .025]);
+  add(piv, G.sph, headMat, [0, .6, 0], [.06, .14, .06]);
+  crops.push(piv);
+}
+[[2.6, -.1], [3.5, .1]].forEach(h => {
+  const hg = new THREE.Group(); hg.position.set(h[0], .1, h[1]); aLand.add(hg);
+  add(hg, G.box, M('#f1dfbd'), [0, .3, 0], [.7, .6, .6]);
+  add(hg, new THREE.ConeGeometry(1, 1, 4), M('#b8322a'), [0, .82, 0], [.62, .45, .55], [0, Math.PI/4, 0]);
+  add(hg, G.box, M('#7a2a22'), [0, .22, .31], [.18, .36, .02]);
+});
+// 后羿
+const aHero = piece(A, -2.75, 1.55, 3);
+add(aHero, G.dodec, M('#6a5646'), [0, .22, 0], [1.0, .38, .78]);
+const HY = human({robe: '#b8342c', robe2: '#8f2520', pants: '#3b2a2a', style: 'topknot', band: '#e8b44c', scale: 1.3});
+HY.g.position.set(0, .5, 0); aHero.add(HY.g);
+const HY_FACE = 1.25; HY.g.rotation.y = HY_FACE;
+const AIM_W = V(.66, .68, -.32).normalize();
+const AIM = AIM_W.clone().applyAxisAngle(Y, -HY_FACE);
+const upP = Y.clone().addScaledVector(AIM, -Y.dot(AIM)).normalize();
+const bowZ = new THREE.Vector3().crossVectors(AIM, upP);
+const GRIP = HY.shL.clone().addScaledVector(AIM, .62).add(V(0, .05, 0));
+const bow = new THREE.Group(); HY.g.add(bow);
+bow.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(AIM, upP, bowZ));
+bow.position.copy(GRIP).addScaledVector(AIM, -.5);
+add(bow, new THREE.TorusGeometry(.5, .03, 8, 40, 2.3), M('#5a2b1a'), [0, 0, 0], null, [0, 0, -1.15]);
+const tipA = V(.5*Math.cos(1.15), .5*Math.sin(1.15), 0), tipB = V(.5*Math.cos(1.15), -.5*Math.sin(1.15), 0);
+const toHY = v => v.clone().applyQuaternion(bow.quaternion).add(bow.position);
+const TIP1 = toHY(tipA), TIP2 = toHY(tipB), SMID = TIP1.clone().add(TIP2).multiplyScalar(.5);
+const DRAW = V(-.05, 1.36, .22).addScaledVector(AIM, -.12);
+const str1 = add(HY.g, G.cyl, M('#fff5de'), null, null, null, true), str2 = add(HY.g, G.cyl, M('#fff5de'), null, null, null, true);
+const nock = arrowMesh(HY.g);
+const quiver = add(HY.g, G.cyl, M('#6b3a1f'), [.05, .95, -.28], [.09, .6, .09], [.35, 0, .2]);
+const elixir = new THREE.Group(); elixir.position.set(-.1, 3.4, .1); aHero.add(elixir);
+const goldM = mat('#f2b33d', {emissive: '#ffb020', emissiveIntensity: .7, roughness: .35, metalness: .2});
+add(elixir, G.sph, goldM, [0, 0, 0], .2); add(elixir, G.sph, goldM, [0, .27, 0], .13);
+add(elixir, G.cyl, M('#6b3a1f'), [0, .43, 0], [.04, .1, .04]);
+add(elixir, new THREE.TorusGeometry(.14, .03, 8, 20), M('#c0392b'), [0, .14, 0], null, [Math.PI/2, 0, 0]);
+glow(elixir, '#ffe28a', 1.8, [0, .1, 0], .9);
+const ARROWS = [];
+const ORDER = [9, 0, 8, 1, 7, 2, 6, 3, 5];
+ORDER.forEach((si, n) => { const a = arrowMesh(A.root); a.visible = false; ARROWS.push({sun: si, t: 23.3 + n*.5, m: a}); });
+SUNS.forEach((s, i) => s.shot = ARROWS.find(a => a.sun === i));
+// 村民
+const aVil = piece(A, 2.5, 1.7, 3);
+const VILS = [[-.9, 0, '#4d6aa8', .95], [0, .15, '#3f7d5c', .78], [.9, 0, '#8a5a9e', .95]].map(v => {
+  const h = human({robe: v[2], style: v[3] > .8 ? 'topknot' : 'buns', scale: v[3]});
+  h.g.position.set(v[0], 0, v[1]); h.g.rotation.y = -.25; aVil.add(h.g); return h;
+});
+add(aVil, G.sph, M('#8a6a45'), [0, 0, 0], [1.6, .12, .7]);
+
+/* ================= 第二回 嫦娥奔月 ================= */
+const Bs = makeStory(); Bs.rise = 35.6; Bs.fold = 60.9;
+const bSky = piece(Bs, 0, -2.75, 0);
+backdrop(bSky, skyGrad([[0, '#0d1a45'], [.7, '#23336e'], [1, '#3d3f7a']], 140));
+const moon = new THREE.Group(); moon.position.set(1.75, 4.1, .35); bSky.add(moon);
+const moonMat = mat('#ffe9b4', {emissive: '#f7d88a', emissiveIntensity: .45, roughness: .9});
+add(moon, G.sph, moonMat, [0, 0, 0], 1.2, null, true);
+[[-.45, .4, .2], [.35, .55, .14], [.5, -.35, .24], [-.2, -.5, .12], [-.6, -.1, .1]].forEach(c => {
+  const d = Math.sqrt(Math.max(0, 1.2*1.2 - c[0]*c[0] - c[1]*c[1]));
+  add(moon, G.sph, mat('#ecd48e', {emissive: '#d8b868', emissiveIntensity: .4}), [c[0], c[1], d - .02], [c[2], c[2], c[2]*.35], null, true);
+});
+const moonGlow = glow(moon, '#ffe6a0', 6.5, [0, 0, -.2], .75);
+const bCloudFar = piece(Bs, 0, -1.6, 1);
+cloud(bCloudFar, [-3.6, .6, 0], 1.2); cloud(bCloudFar, [2.6, .5, .2], 1.0); cloud(bCloudFar, [-.6, .35, .3], .7);
+const palaceP = piece(Bs, 1.55, -1.5, 1);
+cloud(palaceP, [-.9, 2.35, 0], 1.0);
+pavilion(palaceP, [0, 2.55, .1], .72);
+const bRabbit = rabbit(); bRabbit.position.set(-.85, 2.72, .45); bRabbit.scale.setScalar(.55); bRabbit.rotation.y = .6; palaceP.add(bRabbit);
+const bHouseP = piece(Bs, -3.0, .25, 2);
+const bHouse = house(bHouseP, [0, 0, 0], 1.0);
+const bChangP = piece(Bs, -1.35, .95, 2);
+const CE = human({robe: '#f6dfe6', robe2: '#e58e9f', sleeve: '#f9e8ee', style: 'buns', belt: '#c0392b', dress: true, scale: 1.2});
+bChangP.add(CE.g); CE.g.rotation.y = .35;
+const ribbonMat = mat('#d9534f', {roughness: .5, side: THREE.DoubleSide});
+const ribbon = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3([V(.34, 1.05, 0), V(.62, .75, -.25), V(.5, .3, -.4), V(0, .55, -.52), V(-.5, .3, -.4), V(-.62, .75, -.25), V(-.34, 1.05, 0)]), 60, .035, 8, false), ribbonMat);
+ribbon.castShadow = true; CE.g.add(ribbon);
+const pill = new THREE.Group(); CE.g.add(pill);
+add(pill, G.sph, mat('#fff3a0', {emissive: '#ffe066', emissiveIntensity: 1.2}), [0, 0, 0], .07);
+glow(pill, '#fff0a0', .32, [0, 0, 0], .6);
+const bVillP = piece(Bs, 2.1, .95, 3);
+const FM = human({robe: '#3b2d4a', robe2: '#241b30', pants: '#1c1624', style: 'helmet', belt: '#8a6a3a', scale: 1.3});
+bVillP.add(FM.g); FM.g.rotation.y = -1.25;
+const sword = new THREE.Group(); FM.g.add(sword);
+add(sword, G.box, mat('#d8dee8', {metalness: .6, roughness: .25}), [0, .5, 0], [.07, .9, .02]);
+add(sword, G.box, M('#8a6a3a'), [0, .04, 0], [.24, .05, .06]);
+add(sword, G.cyl, M('#3a2a22'), [0, -.1, 0], [.03, .24, .03]);
+const fmEyes = mat('#ff3a2a', {emissive: '#ff2a1a', emissiveIntensity: 1.5});
+FM.head.children[1].material = fmEyes; FM.head.children[2].material = fmEyes;
+const bHouyiP = piece(Bs, 2.0, 1.85, 0, 56.2);
+const HY2 = human({robe: '#b8342c', robe2: '#8f2520', pants: '#3b2a2a', style: 'topknot', band: '#e8b44c', scale: 1.2});
+HY2.g.position.set(-1.35, 0, .1); HY2.g.rotation.y = .55; bHouyiP.add(HY2.g);
+HY2.head.rotation.x = -.45;
+HY2.setArms(V(.42, 1.75, .35), V(-.4, .6, .08));
+const table = new THREE.Group(); table.position.set(.45, 0, 0); bHouyiP.add(table);
+add(table, G.box, M('#7a3b22'), [0, .62, 0], [1.9, .08, .8]);
+add(table, G.box, mat('#b8322a', {roughness: .8}), [0, .45, .0], [1.94, .32, .84]);
+[[-.85, -.32], [.85, -.32], [-.85, .32], [.85, .32]].forEach(c => add(table, G.cyl, M('#5a2b18'), [c[0], .3, c[1]], [.05, .6, .05]));
+add(table, G.cyl, M('#f1e4c6'), [-.52, .68, 0], [.34, .03, .34]);
+add(table, G.sph, mat('#cfdc6a', {roughness: .7}), [-.52, .9, 0], .23);
+add(table, G.sph, M('#4f8a3a'), [-.46, 1.14, .02], [.09, .03, .05], [0, 0, .5]);
+const cakeM = mat('#d99a4a', {roughness: .7}), cakeTop = mat('#e8ae5c', {roughness: .6});
+add(table, G.cyl, cakeM, [.12, .72, 0], [.24, .1, .24]); add(table, G.cyl, cakeTop, [.12, .83, 0], [.24, .1, .24]);
+add(table, new THREE.TorusGeometry(.13, .02, 8, 24), M('#b5752e'), [.12, .885, 0], null, [Math.PI/2, 0, 0]);
+[[.62, .06], [.78, -.06], [.7, .1]].forEach((o, i) => add(table, G.sph, M('#f08a2c'), [o[0], .75 + (i === 2 ? .14 : 0), o[1]], .1));
+add(table, G.cyl, M('#8a6a3a'), [.82, .7, -.25], [.07, .1, .07]);
+const smoke = [0, 1, 2].map(i => glow(table, '#e8e0d0', .35, [.82, .9, -.25], .4));
+
+/* ================= 第三回 吳剛伐桂 ================= */
+const C = makeStory(); C.rise = 63.6; C.fold = 88.9;
+const cSky = piece(C, 0, -2.75, 0);
+backdrop(cSky, skyGrad([[0, '#1f2463'], [.6, '#5b5ea6'], [1, '#b9a9d8']], 90));
+const earthTex = canvasTex(256, 128, (g, w, h) => {
+  g.fillStyle = '#3d7fd0'; g.fillRect(0, 0, w, h); g.fillStyle = '#6fbf73';
+  [[40, 40, 28, 18], [120, 70, 34, 22], [200, 45, 26, 16], [90, 100, 20, 10], [230, 95, 18, 12]].forEach(b => { g.beginPath(); g.ellipse(b[0], b[1], b[2], b[3], .4, 0, 7); g.fill(); });
+});
+const earth = new THREE.Mesh(G.sph, new THREE.MeshStandardMaterial({map: earthTex, emissive: '#2a4a80', emissiveIntensity: .35}));
+earth.scale.setScalar(.55); earth.position.set(3.3, 4.7, .6); cSky.add(earth);
+glow(cSky, '#8fc0ff', 2.2, [3.3, 4.7, .4], .5);
+pavilion(cSky, [-3.1, 1.2, .5], .6, '#d9cdf0', '#9f8fcf');
+const cGround = piece(C, 0, -1.3, 1);
+const moonGround = mat('#d6cfea', {roughness: .95});
+[[-3, 2.2], [0, 2.6], [3, 2.2]].forEach(d => add(cGround, G.sph, moonGround, [d[0], 0, 0], [d[1], .38, 1.0]));
+[[-2.4, .2], [1.6, .3], [3.4, .1]].forEach(c => add(cGround, new THREE.TorusGeometry(.3, .06, 8, 24), M('#bdb4dc'), [c[0], .33, c[1]], [1, 1, .4], [Math.PI/2 - .2, 0, 0]));
+const cTreeP = piece(C, -.5, -.2, 2);
+const bark = mat('#6b4226', {roughness: .9});
+const trunk = add(cTreeP, new THREE.CylinderGeometry(.34, .5, 2.6, 16), bark, [0, 1.3, 0]);
+[[.9, 2.5, -.6, .8], [-.9, 2.4, .7, .75], [.1, 2.8, .1, .6]].forEach(b => { const m = add(cTreeP, G.cyl, bark); limb(m, V(0, 2.0, 0), V(b[0], b[1], b[2]*.3), .12*b[3]*1.4); });
+const leafA = mat('#2f6b4f', {roughness: .8}), leafB = mat('#3d8560', {roughness: .8});
+const CAN = [];
+for (let i = 0; i < 24; i++){
+  const a = rnd()*6.283, r = Math.sqrt(rnd());
+  const c = V(Math.cos(a)*r*1.45, 3.3 + Math.sin(a)*r*.85 + (rnd() - .5)*.3, (rnd() - .5)*1.0);
+  const s = .55 + rnd()*.4; CAN.push([c, s]); add(cTreeP, G.sph, i % 3 ? leafA : leafB, [c.x, c.y, c.z], s);
+}
+const FLOWERS = 320, flGeo = new THREE.SphereGeometry(.055, 8, 6);
+const fl = new THREE.InstancedMesh(flGeo, mat('#f4c542', {emissive: '#c08a10', emissiveIntensity: .5}), FLOWERS);
+const dmy = new THREE.Object3D();
+for (let i = 0; i < FLOWERS; i++){
+  const [c, s] = CAN[Math.floor(rnd()*CAN.length)];
+  const d = V(rnd() - .5, rnd() - .2, rnd() - .1).normalize();
+  dmy.position.copy(c).addScaledVector(d, s*1.0); dmy.scale.setScalar(.7 + rnd()*.8); dmy.updateMatrix(); fl.setMatrixAt(i, dmy.matrix);
+}
+fl.castShadow = true; cTreeP.add(fl);
+const notchMat = mat('#f5d7a0', {emissive: '#7a5020', emissiveIntensity: .4, transparent: true, opacity: 0});
+const notch = add(cTreeP, G.box, notchMat, [.39, .45, .25], [.12, .22, .2], [0, -.57, 0], true);
+const healM = new THREE.MeshBasicMaterial({color: '#bff59a', transparent: true, opacity: 0});
+const heals = [0, 1, 2, 3].map(i => add(cTreeP, G.sph, healM, [.46, .35 + i*.08, .2 + (i % 2)*.1], .035, null, true));
+const cWuP = piece(C, 1.3, -.1, 3);
+const WG = human({robe: '#2d3f73', robe2: '#1f2d55', pants: '#2a2a3a', style: 'hat', belt: '#c9a45a', scale: 1.25});
+cWuP.add(WG.g); WG.g.rotation.y = -Math.PI/2 + .15;
+const axe = new THREE.Group(); axe.position.set(0, 1.0, .08); WG.g.add(axe);
+add(axe, G.cyl, M('#7a4a24'), [0, 0, .62], [.03, 1.15, .03], [Math.PI/2, 0, 0]);
+add(axe, G.box, mat('#c8d0dc', {metalness: .6, roughness: .3}), [0, .02, 1.2], [.05, .34, .2]);
+add(axe, G.box, M('#5a5a66'), [0, .02, 1.1], [.07, .16, .08]);
+const chipM = M('#e8c48a');
+const chips = [0, 1, 2, 3, 4].map(i => add(cTreeP, G.box, chipM, [0, 0, 0], .05));
+const PET = 44, petals = new THREE.InstancedMesh(new THREE.SphereGeometry(.05, 6, 4), mat('#f4c542', {emissive: '#b07a10', emissiveIntensity: .6}), PET);
+const petalData = Array.from({length: PET}, () => ({x: (rnd() - .5)*3.8, z: (rnd() - .5)*1.6 + .4, off: rnd()*4, sp: .45 + rnd()*.4, ph: rnd()*6.28}));
+cTreeP.add(petals);
+const cRabP = piece(C, -3.3, 1.7, 3);
+const cRab = rabbit(); cRab.scale.setScalar(1.25); cRab.rotation.y = .25; cRabP.add(cRab);
+add(cRabP, G.cyl, M('#8a5a3b'), [.95, .25, .2], [.26, .5, .26]);
+add(cRabP, G.cyl, M('#5a3a22'), [.95, .51, .2], [.2, .02, .2]);
+const pestle = add(cRabP, G.cyl, M('#b07a4a'), [.8, .75, .15], [.045, .7, .045], [0, 0, .5]);
+
+/* ================= 標題與旁白 ================= */
+const stageStars = [];
+for (let i = 0; i < 90; i++){
+  const d = document.createElement('div'), s = 2 + rnd()*4; d.className = 'star';
+  d.style.cssText = `left:${(rnd()*1080).toFixed(0)}px;top:${(rnd()*1900).toFixed(0)}px;width:${s.toFixed(1)}px;height:${s.toFixed(1)}px`;
+  $('stars').appendChild(d); stageStars.push({el: d, ph: rnd()*6.28, sp: .8 + rnd()*1.6});
+}
+const petals2d = [];
+for (let i = 0; i < 30; i++){
+  const dv = document.createElement('div'); dv.className = 'petal2d';
+  dv.innerHTML = '<svg viewBox="-10 -10 20 20" width="30" height="30"><use href="#osm" fill="#f4c542"/></svg>';
+  $('petals2d').appendChild(dv);
+  petals2d.push({el: dv, x0: rnd()*1080, off: rnd()*2000, sp: 110 + rnd()*90, amp: 20 + rnd()*40, ph: rnd()*6.28, sc: .6 + rnd()*.8});
+}
+const HEAD = [
+  [0, 6.2, '燿翔居家長照機構', '中秋 3D 故事書'],
+  [6.5, 33.4, '第一回', '后羿射日'], [34, 61.4, '第二回', '嫦娥奔月'], [62, 89.4, '第三回', '吳剛伐桂'],
+  [90, 100.5, '燿翔居家長照機構　敬祝', '中秋快樂']
+];
+const CAPS = [
+  [1.2, 4.8, '燿翔居家長照機構<br>為您說三個中秋故事'],
+  [5.0, 7.6, '翻開故事書——'],
+  [8, 12.8, '很久很久以前，<br>天上同時出現了<b>十個太陽</b>。'],
+  [13, 17.8, '大地被曬得乾裂，莊稼枯死，<br>百姓苦不堪言。'],
+  [18, 22.8, '神射手<b>后羿</b>登上高山，<br>拉開了神弓——'],
+  [23, 27.8, '一口氣射下九個太陽，<br>只留下一個，<br>為大地帶來光明與溫暖。'],
+  [28, 32.8, '王母娘娘感謝后羿，<br>賜給他一顆<b>長生不老的仙藥</b>。'],
+  [33.2, 35.8, '下一個故事：<b>嫦娥奔月</b>'],
+  [36, 40.8, '后羿把仙藥交給妻子<b>嫦娥</b>，<br>請她好好收藏。'],
+  [41, 45.8, '壞人逄蒙趁后羿外出，<br>闖進家裡想搶奪仙藥。'],
+  [46, 50.8, '情急之下，嫦娥吞下仙藥，<br>身子輕飄飄地飛上了天。'],
+  [51, 55.8, '她飛到離人間最近的月亮，<br>住進<b>廣寒宮</b>，有玉兔陪伴。'],
+  [56, 60.8, '后羿望月思妻，擺上鮮果月餅。<br>從此，八月十五<b>賞月團圓</b><br>的習俗流傳至今。'],
+  [61.2, 63.8, '下一個故事：<b>吳剛伐桂</b>'],
+  [64, 68.8, '月宮裡，<br>有一棵高達五百丈的<b>桂花樹</b>。'],
+  [69, 73.8, '<b>吳剛</b>學仙不專心，<br>被罰到月宮砍倒這棵桂樹。'],
+  [74, 78.8, '可是斧頭一砍下去，<br>樹上的傷口馬上又長了回來。'],
+  [79, 83.8, '吳剛日復一日，<br>不停地砍呀砍……'],
+  [84, 88.8, '每到中秋桂花飄香，<br>人們說，那是<br>從月宮飄下來的香氣。'],
+  [89.2, 92.2, '故事說完了，<br>闔上故事書……'],
+  [92.6, 100.5, '月圓人團圓<br>燿翔陪您　<b>安心過中秋</b>']
+];
+let curHead = -1, curCap = -1;
+const seg = (list, t) => list.findIndex(x => t >= x[0] && t < x[1]);
+const fadeOf = (x, t) => P(t, x[0], x[0] + .45) * (1 - P(t, x[1] - .4, x[1]));
+
+/* ================= 每幀更新 ================= */
+const STORIES = [A, Bs, C];
+function updatePieces(S, t){
+  const vis = t >= S.rise - .05 && t < S.fold + .9; S.root.visible = vis; if (!vis) return;
+  S.pieces.forEach(pc => {
+    const r0 = pc.riseAt != null ? pc.riseAt : S.rise + pc.i*.2;
+    const e = ebk(P(t, r0, r0 + 1.1)) * (1 - eio(P(t, S.fold, S.fold + .75)));
+    pc.g.rotation.x = -(Math.PI/2)*(1 - e);
+    pc.g.scale.setScalar(.15 + .85*clamp(e, 0, 1));
+    pc.g.visible = e > .003;
+  });
+}
+const tmp = V(0, 0, 0);
+function storyA(t){
+  SUNS.forEach((s, i) => {
+    let sc = s.s*(1 + .06*Math.sin(t*6 + s.ph)), op = 1;
+    s.g.position.copy(s.base);
+    if (s.shot){
+      const hit = s.shot.t + .45, f = P(t, hit, hit + 1.3);
+      if (t >= hit) sc *= 1 + .35*(1 - P(t, hit, hit + .3));
+      s.g.position.x += f*.3; s.g.position.y -= eio(f)*4.2; s.g.rotation.z = f*3;
+      op = 1 - P(t, hit + .5, hit + 1.3);
+    }
+    s.g.scale.setScalar(sc); s.body.material.opacity = op; s.rm.opacity = op; s.gl.material.opacity = .85*op;
+    s.g.visible = op > .01; s.rays.rotation.z = t*.45 + s.ph;
+  });
+  aHot.material.opacity = 1 - P(t, 27.6, 29.2);
+  const lush = P(t, 28, 29.8);
+  duneMat.color.lerpColors(new THREE.Color('#c08a52'), new THREE.Color('#79b060'), lush);
+  stalkMat.color.lerpColors(new THREE.Color('#8a5a2b'), new THREE.Color('#3f7d3a'), lush);
+  headMat.color.lerpColors(new THREE.Color('#9a6a3a'), new THREE.Color('#f0b93a'), lush);
+  crops.forEach((c, i) => { c.rotation.z = lerp(.6, 0, lush) * (i % 2 ? 1 : -1) + Math.sin(t*2 + i)*.05*lush; });
+  const joy = P(t, 28.2, 28.9);
+  VILS.forEach((h, i) => {
+    h.head.rotation.x = .38*(1 - joy);
+    const up = joy, bounce = Math.abs(Math.sin(t*5 + i))*.14*joy;
+    h.g.position.y = bounce;
+    h.setArms(V(lerp(.38, .5, up), lerp(.58, 1.75, up), lerp(.1, .15, up)), V(lerp(-.38, -.5, up), lerp(.58, 1.75, up), lerp(.1, .15, up)));
+  });
+  // 拉弓
+  const ready = eio(P(t, 18.6, 19.4)) * (1 - P(t, 28.3, 28.9));
+  let pull = eio(P(t, 19.3, 20.7)), snap = 1;
+  ARROWS.forEach(a => { const d = t - a.t; if (d >= 0 && d < .42) snap = Math.min(snap, d < .06 ? 0 : eio((d - .06)/.36)); });
+  pull *= snap*(1 - P(t, 27.9, 28.4));
+  const sPt = SMID.clone().lerp(DRAW, pull);
+  limb(str1, TIP1, sPt, .01); limb(str2, sPt, TIP2, .01);
+  const restR = V(-.42, .62, .1);
+  HY.setArms(GRIP, restR.clone().lerp(ready > .5 ? sPt : SMID, ready));
+  nock.visible = pull > .25 && t < 28;
+  nock.position.copy(sPt).addScaledVector(AIM, .45); nock.quaternion.setFromUnitVectors(Y, AIM);
+  // 飛箭
+  scene.updateMatrixWorld();
+  const start = A.root.worldToLocal(HY.g.localToWorld(GRIP.clone()));
+  ARROWS.forEach(a => {
+    const u = P(t, a.t, a.t + .45); a.m.visible = t >= a.t && t <= a.t + .45;
+    if (!a.m.visible) return;
+    const s = SUNS[a.sun], end = A.root.worldToLocal(s.g.parent.localToWorld(s.base.clone()));
+    a.m.position.copy(start).lerp(end, u); a.m.quaternion.setFromUnitVectors(Y, tmp.subVectors(end, start).normalize());
+  });
+  const e = P(t, 28.4, 29.4);
+  elixir.visible = e > 0; elixir.scale.setScalar(.2 + .8*eout(e)); elixir.position.y = 3.4 + Math.sin(t*2)*.1; elixir.rotation.y = t*1.2;
+}
+function storyB(t){
+  moonGlow.material.opacity = .7 + .1*Math.sin(t*1.6);
+  bHouse.lanterns.forEach((l, i) => l.rotation.z = Math.sin(t*1.8 + i)*.12);
+  const a = eio(P(t, 46.4, 50.6));
+  const p0 = V(0, 0, 0), p1 = V(1.4, 3.8, -.6), p2 = V(2.2, 3.35, -2.05);
+  const q = p0.clone().multiplyScalar((1 - a)*(1 - a)).add(p1.clone().multiplyScalar(2*a*(1 - a))).add(p2.clone().multiplyScalar(a*a));
+  CE.g.position.copy(q); CE.g.position.y += Math.sin(t*2)*.05*(.3 + a);
+  CE.g.scale.setScalar(1.2*lerp(1, .5, a)); CE.g.rotation.z = Math.sin(t*1.5)*.05 - a*(1 - a)*.8;
+  ribbon.rotation.y = Math.sin(t*2.2)*.25; ribbon.rotation.x = -a*(1 - a)*1.2;
+  const fly = P(t, 46.4, 47.2);
+  CE.setArms(V(lerp(.4, .72, fly), lerp(.62, 1.05, fly), lerp(.12, -.05, fly)), V(lerp(-.2, -.72, fly), lerp(.95, 1.05, fly), lerp(.3, -.05, fly)));
+  const sw = P(t, 45.8, 46.3);
+  pill.visible = t < 46.4; pill.position.copy(V(-.2, .98, .38).lerp(V(0, 1.35, .35), sw)); pill.scale.setScalar(1 - .8*sw);
+  const inn = ebk(P(t, 41.1, 41.9)), out = eio(P(t, 46.8, 47.6));
+  FM.g.scale.setScalar(Math.max(.001, 1.3*inn*(1 - out))); FM.g.visible = t > 41.1 && out < 1;
+  FM.g.position.x = lerp(.9, 0, eout(P(t, 41.1, 42.8))) + out*1.5;
+  FM.g.position.y = Math.abs(Math.sin(t*6))*.06*P(t, 41.1, 42.8)*(1 - P(t, 42.8, 43));
+  FM.setArms(V(.45, 1.65, .2), V(-.5, 1.0, .5));
+  sword.position.set(.45, 1.65, .2); sword.rotation.set(-.3 + Math.sin(t*3)*.15, 0, -.3);
+  const rb = ebk(P(t, 51.3, 52.1));
+  bRabbit.visible = rb > .01; bRabbit.scale.setScalar(.55*Math.max(rb, .01));
+  bRabbit.position.y = 2.72 + Math.abs(Math.sin(t*3.2))*.14*P(t, 52, 52.5);
+  smoke.forEach((s, i) => { const k = ((t*.35 + i/3) % 1); s.position.set(.82 + Math.sin(t + i)*.06, .9 + k*1.0, -.25); s.material.opacity = .45*(1 - k); s.scale.setScalar(.25 + k*.4); });
+}
+function storyC(t){
+  earth.rotation.y = t*.3;
+  const show = ebk(P(t, 69, 69.8));
+  WG.g.visible = t > 69; WG.g.scale.setScalar(1.25*Math.max(show, .001));
+  const start = 69.8, per = 1.6; let ang = .55, dtHit = 99;
+  if (t >= start){
+    const u = ((t - start) % per)/per;
+    if (u < .55) ang = lerp(.55, -1.9, eio(u/.55));
+    else if (u < .7) ang = lerp(-1.9, .6, ein((u - .55)/.15));
+    else ang = lerp(.6, .55, eout((u - .7)/.3));
+    const n = Math.floor((t - start - .7*per)/per);
+    if (t >= start + .7*per) dtHit = t - (start + n*per + .7*per);
+  }
+  axe.rotation.x = ang;
+  const h1 = V(0, 0, .3).applyQuaternion(axe.quaternion).add(axe.position), h2 = V(0, 0, .6).applyQuaternion(axe.quaternion).add(axe.position);
+  WG.setArms(h2, h1);
+  WG.g.rotation.z = Math.sin(ang)*.04;
+  notchMat.opacity = dtHit < .15 ? 1 : 1 - P(dtHit, .3, 1.1);
+  healM.opacity = dtHit < 1.2 ? Math.sin(Math.PI*P(dtHit, .3, 1.1)) : 0;
+  heals.forEach((h, i) => h.position.y = .35 + i*.08 + P(dtHit, .3, 1.1)*.25);
+  chips.forEach((c, i) => {
+    c.visible = dtHit < .55;
+    c.position.set(.44 + (.6 + i*.25)*dtHit, .45 + (1.4 - i*.2)*dtHit - 3*dtHit*dtHit, .28 + (i - 1)*.3*dtHit);
+    c.rotation.set(dtHit*9, dtHit*7, 0);
+  });
+  petalData.forEach((p, i) => {
+    const k = ((t*p.sp*.25 + p.off) % 1);
+    dmy.position.set(p.x + Math.sin(t*1.3 + p.ph)*.25, 3.4 - k*3.4, p.z); dmy.rotation.set(t + p.ph, t*.7, 0);
+    dmy.scale.setScalar(k > .92 ? (1 - k)/.08 : 1); dmy.updateMatrix(); petals.setMatrixAt(i, dmy.matrix);
+  });
+  petals.instanceMatrix.needsUpdate = true;
+  pestle.position.y = .75 + Math.abs(Math.sin(t*3.4))*.2;
+}
+function render(t){
+  stageStars.forEach(s => s.el.style.opacity = (.25 + .6*Math.abs(Math.sin(t*s.sp*.6 + s.ph))).toFixed(2));
+  // 書本姿態
+  const o = eio(P(t, 5, 7)), c = eio(P(t, 90.2, 92.4)), intro = eout(P(t, 0, 1.6));
+  const closedX = -(PW + OV)/2;
+  book.position.set(lerp(lerp(closedX, 0, o), closedX, c), lerp(-6, 0, intro) + lerp(2.4, 0, o) + lerp(0, 2.4, c) + Math.sin(t*.9)*.05, lerp(1.2, 0, o) + lerp(0, 1.2, c));
+  book.rotation.x = lerp(lerp(1.05, 0, o), 1.05, c);
+  coverPivot.rotation.z = t < 90 ? Math.PI*o : Math.PI*(1 - c);
+  [[leaf1, 34, 35.4], [leaf2, 62, 63.4]].forEach(L => { L[0].visible = t >= L[1] && t < 90; L[0].rotation.z = Math.PI*eio(P(t, L[1], L[2])); });
+  STORIES.forEach(S => updatePieces(S, t));
+  if (A.root.visible) storyA(t);
+  if (Bs.root.visible) storyB(t);
+  if (C.root.visible) storyC(t);
+  camera.position.set(CAM.x + Math.sin(t*.15)*.5, CAM.y, CAM.z);
+  camera.lookAt(LOOK);
+  renderer.render(scene, camera);
+  // 畫面桂花
+  const pe = P(t, 84, 85.5)*(1 - P(t, 99.4, 100));
+  petals2d.forEach(p => {
+    if (pe <= 0){ p.el.style.opacity = 0; return; }
+    const y = ((t*p.sp + p.off) % 2000) - 40, x = p.x0 + Math.sin(t*.9 + p.ph)*p.amp;
+    p.el.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) rotate(${((t*60 + p.ph*57) % 360).toFixed(0)}deg) scale(${p.sc.toFixed(2)})`;
+    p.el.style.opacity = (pe*.9).toFixed(2);
+  });
+  const h = seg(HEAD, t);
+  if (h !== curHead){ curHead = h; $('kicker').textContent = h >= 0 ? HEAD[h][2] : ''; $('title').textContent = h >= 0 ? HEAD[h][3] : ''; }
+  $('head').style.opacity = h >= 0 ? fadeOf(HEAD[h], t).toFixed(3) : 0;
+  const ci = seg(CAPS, t);
+  if (ci !== curCap){ curCap = ci; $('capT').innerHTML = ci >= 0 ? CAPS[ci][2] : ''; }
+  $('capT').style.opacity = ci >= 0 ? fadeOf(CAPS[ci], t).toFixed(3) : 0;
+  $('cap').style.opacity = P(t, .9, 1.5).toFixed(3);
+}
+
+function fit(){ const s = Math.min(innerWidth/1080, innerHeight/1920); $('stage').style.setProperty('--s', s.toFixed(4)); }
+addEventListener('resize', fit); fit();
+if (location.search.includes('capture')){
+  document.documentElement.classList.add('capture');
+  window.__seek = t => { render(t); return 1; };
+  render(0);
+} else {
+  let start = performance.now(), paused = false, cur = 0;
+  const seek = $('seek');
+  const jump = t => { start = performance.now() - t*1000; cur = t; render(t); };
+  const loop = now => {
+    if (!paused){ cur = (now - start)/1000; if (cur > D + 2) jump(0); render(Math.min(cur, D)); seek.value = Math.min(cur, D).toFixed(1); }
+    requestAnimationFrame(loop);
+  };
+  requestAnimationFrame(loop);
+  $('bPlay').onclick = function(){ paused = !paused; this.textContent = paused ? '播放' : '暫停'; if (!paused) jump(cur); };
+  document.querySelectorAll('.ui [data-t]').forEach(b => b.onclick = () => jump(parseFloat(b.dataset.t)));
+  seek.oninput = () => jump(parseFloat(seek.value));
+}
+</script>
+</body>
+</html>

@@ -8,7 +8,7 @@
   python3 greetings/render_video.py storybook --jobs 4    # 中秋立體故事書，四段平行合成
   python3 greetings/render_video.py storybook --preview --times 8 20 --outdir /tmp/x
 """
-import argparse, glob, subprocess, tempfile, time
+import argparse, functools, glob, http.server, subprocess, tempfile, threading, time
 from concurrent.futures import ProcessPoolExecutor
 from multiprocessing import get_context
 from pathlib import Path
@@ -41,10 +41,33 @@ def ffmpeg_exe():
         return "ffmpeg"
 
 
+_SERVER = {}
+
+
+def serve_dir(root):
+    """以本機 HTTP 伺服器提供頁面（ES module 無法從 file:// 載入）。"""
+    if root not in _SERVER:
+        handler = functools.partial(QuietHandler, directory=str(root))
+        srv = http.server.ThreadingHTTPServer(("127.0.0.1", 0), handler)
+        threading.Thread(target=srv.serve_forever, daemon=True).start()
+        _SERVER[root] = srv.server_address[1]
+    return _SERVER[root]
+
+
+class QuietHandler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, *a):
+        pass
+
+
 def open_page(p, html):
-    b = p.chromium.launch(executable_path=chromium_exe())
+    html = Path(html)
+    port = serve_dir(html.parent)
+    b = p.chromium.launch(executable_path=chromium_exe(),
+                          args=["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"])
     pg = b.new_page(viewport={"width": W, "height": H}, device_scale_factor=1)
-    pg.goto(Path(html).as_uri() + "?capture=1")
+    pg.on("pageerror", lambda e: print("  [頁面錯誤]", e, flush=True))
+    pg.goto(f"http://127.0.0.1:{port}/{html.name}?capture=1")
+    pg.wait_for_function("typeof window.__seek === 'function'", timeout=60000)
     pg.wait_for_function("document.fonts.status === 'loaded'", timeout=20000)
     pg.evaluate("document.fonts.ready")
     time.sleep(0.5)

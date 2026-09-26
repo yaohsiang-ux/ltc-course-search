@@ -358,6 +358,10 @@ def build():
         '<div class="card"><h2>中秋立體故事書</h2><p>后羿射日・嫦娥奔月・吳剛伐桂<br>翻頁立體紙雕動畫，約 100 秒</p>'
         '<a href="mid-autumn-storybook.html">播放動畫</a><a class="ghost" href="mid-autumn-storybook.mp4" download>下載 MP4</a></div>'
     )
+    cards.append(
+        '<div class="card"><h2>中秋 3D 故事書</h2><p>后羿射日・嫦娥奔月・吳剛伐桂<br>人物器物皆為 3D 立體模型，約 100 秒</p>'
+        '<a href="mid-autumn-storybook-3d.html">播放動畫</a><a class="ghost" href="mid-autumn-storybook-3d.mp4" download>下載 MP4</a></div>'
+    )
     (OUT / "index.html").write_text(INDEX.replace("__CARDS__", "\n".join(cards)), encoding="utf-8")
     print("寫入", OUT / "index.html")
 

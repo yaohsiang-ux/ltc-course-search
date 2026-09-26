@@ -37,6 +37,7 @@ docs/index.html GitHub Pages 發布頁
 
 - 30 秒賀卡：「個案與家屬」「同仁」「對外社群」三個版本
 - 中秋立體故事書（`mid-autumn-storybook.html`，約 100 秒）：后羿射日、嫦娥奔月、吳剛伐桂，3D 翻頁紙雕動畫，網頁版可用章節按鈕跳播
+- 中秋 3D 故事書（`mid-autumn-storybook-3d.html`，約 100 秒）：同樣三則故事，人物、器物、場景皆以 Three.js 建模打光（`vendor/three.module.min.js`，MIT 授權）
 
 
 - 線上播放：https://yaohsiang-ux.github.io/ltc-course-search/greetings/
@@ -44,3 +45,4 @@ docs/index.html GitHub Pages 發布頁
 - `greetings/render_video.py`：以 Playwright 逐幀截圖、ffmpeg 合成 MP4（需 `pip install playwright imageio-ffmpeg`）
   - 賀卡：`python3 greetings/render_video.py`
   - 故事書：`python3 greetings/render_video.py storybook --jobs 4`
+  - 3D 故事書：`python3 greetings/render_video.py storybook-3d --jobs 4`（以 SwiftShader 軟體 WebGL 渲染）
