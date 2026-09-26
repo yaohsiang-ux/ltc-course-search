@@ -75,6 +75,10 @@ body{display:flex;align-items:center;justify-content:center;font-family:var(--sa
 .ui button{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:999px;padding:8px 14px;cursor:pointer;font-size:15px}
 .ui button:hover{background:rgba(255,255,255,.24)}
 .ui input{flex:1 1 100%;accent-color:#e8b44c}
+.start{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;font:700 22px/1.2 var(--sans);letter-spacing:.08em;
+  padding:18px 32px;border-radius:999px;border:2px solid #e8b44c;background:rgba(12,18,48,.92);color:#ffe3a3;cursor:pointer;box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.start:hover{background:rgba(40,40,90,.95)}
+html.capture .start{display:none}
 html.capture .ui{display:none}
 </style>
 </head>
@@ -441,6 +445,8 @@ html.capture .ui{display:none}
   <div class="foot">臺北市私立燿翔居家長照機構</div>
 </div>
 
+<audio id="nar" src="mid-autumn-storybook-narration.mp3" preload="auto"></audio>
+<button id="startBtn" class="start" type="button">▶ 開始聽故事（有聲）</button>
 <div class="ui">
   <button id="bPlay">暫停</button>
   <button data-t="0">封面</button><button data-t="6.5">后羿射日</button><button data-t="34">嫦娥奔月</button><button data-t="62">吳剛伐桂</button>
@@ -449,7 +455,10 @@ html.capture .ui{display:none}
 
 <script>
 (function(){
-  var D = 100; window.__DURATION = D;
+  var WARP = /*WARP*/[[0.0,0.0],[1.2,1.2],[5.82,5.0],[9.252,8.0],[14.686,13.0],[20.402,18.0],[25.402,23.0],[32.328,28.0],[38.184,33.2],[41.283,36.0],[46.59,41.0],[52.062,46.0],[58.434,51.0],[64.877,56.0],[72.975,61.2],[76.479,64.0],[81.479,69.0],[87.073,74.0],[92.86,79.0],[97.86,84.0],[104.246,89.2],[108.096,92.6],[117.204,100.0]]/*WARP*/;
+  var D = WARP[WARP.length - 1][0]; window.__DURATION = D;
+  function pageT(r){ for (var i = 1; i < WARP.length; i++){ if (r <= WARP[i][0]){ var a = WARP[i-1], b = WARP[i]; return a[1] + (b[1] - a[1])*(r - a[0])/Math.max(1e-6, b[0] - a[0]); } } return WARP[WARP.length - 1][1]; }
+  function realT(p){ for (var i = 1; i < WARP.length; i++){ if (p <= WARP[i][1]){ var a = WARP[i-1], b = WARP[i]; return a[0] + (b[0] - a[0])*(p - a[1])/Math.max(1e-6, b[1] - a[1]); } } return D; }
   var $ = function(id){ return document.getElementById(id); };
   var seed = 915; function rnd(){ seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
   function clamp(x,a,b){ return Math.max(a, Math.min(b, x)); }
@@ -585,7 +594,8 @@ html.capture .ui{display:none}
   var book = $('book'), cover = $('cover'), leaf1 = $('leaf1'), leaf2 = $('leaf2');
   var cvF = cover.children[0], cvB = cover.children[1];
 
-  function render(t){
+  function render(rt){
+    var t = pageT(rt);
     // 背景星星
     stageStars.forEach(function(s){ s.el.style.opacity = (.25 + .6*Math.abs(Math.sin(t*s.sp*.6 + s.ph))).toFixed(2); });
 
@@ -619,7 +629,7 @@ html.capture .ui{display:none}
       s.pieces.forEach(function(p){
         var ang = p.id === 'bHouyi' ? popAngle(t, s, 0, 56.2) : popAngle(t, s, p.i);
         p.el.style.transform = 'translateZ(.6px) rotateX(' + (-ang).toFixed(2) + 'deg)' + (EXTRA[p.id] ? EXTRA[p.id](t) : '');
-        if (p.id === 'bHouyi') p.el.style.visibility = t >= 56.2 ? 'visible' : 'hidden';
+        if (p.id === 'bHouyi') p.el.style.visibility = t >= 56.2 ? 'inherit' : 'hidden';
       });
     });
     if (t >= 6.9 && t < 34) storyA(t);
@@ -759,16 +769,27 @@ html.capture .ui{display:none}
     window.__seek = function(t){ render(t); return 1; };
     render(0);
   } else {
-    var start = performance.now(), paused = false, cur = 0, seek = $('seek');
-    function jump(t){ start = performance.now() - t*1000; cur = t; render(t); }
-    function loop(now){
-      if (!paused){ cur = (now - start)/1000; if (cur > D + 2){ jump(0); } render(Math.min(cur, D)); seek.value = Math.min(cur, D).toFixed(1); }
+var nar = $('nar'), seek = $('seek'), paused = true, cur = 0, start = 0, lastFix = 0;
+    seek.max = D.toFixed(1);
+    function nowS(){ return performance.now()/1000; }
+    function jump(r){ cur = Math.max(0, Math.min(r, D)); start = nowS() - cur; try { nar.currentTime = cur; } catch (e) {} render(cur); seek.value = cur.toFixed(1); }
+    function play(){ paused = false; $('startBtn').style.display = 'none'; start = nowS() - cur; try { nar.currentTime = cur; } catch (e) {} var pr = nar.play(); if (pr && pr.catch) pr.catch(function(){}); $('bPlay').textContent = '暫停'; }
+    function pause(){ paused = true; nar.pause(); $('bPlay').textContent = '播放'; }
+    function loop(){
+      if (!paused){
+        cur = nowS() - start;
+        var nt = nowS();
+        if (!nar.paused && !nar.ended && cur < D && Math.abs(nar.currentTime - cur) > .35 && nt - lastFix > 1){ lastFix = nt; try { nar.currentTime = cur; } catch (e) {} }
+        if (cur > D + 2){ jump(0); play(); }
+        render(Math.min(cur, D)); seek.value = Math.min(cur, D).toFixed(1);
+      }
       requestAnimationFrame(loop);
     }
-    requestAnimationFrame(loop);
-    $('bPlay').onclick = function(){ paused = !paused; this.textContent = paused ? '播放' : '暫停'; if (!paused) jump(cur); };
-    Array.prototype.forEach.call(document.querySelectorAll('.ui [data-t]'), function(b){ b.onclick = function(){ jump(parseFloat(b.dataset.t)); }; });
-    seek.oninput = function(){ jump(parseFloat(seek.value)); };
+    render(0); requestAnimationFrame(loop);
+    $('startBtn').onclick = function(){ jump(0); play(); };
+    $('bPlay').onclick = function(){ if (paused) play(); else pause(); };
+    Array.prototype.forEach.call(document.querySelectorAll('.ui [data-t]'), function(b){ b.onclick = function(){ jump(realT(parseFloat(b.dataset.t))); play(); }; });
+    seek.oninput = function(){ jump(parseFloat(seek.value)); if (!paused) play(); };
   }
 })();
 </script>
