@@ -30,3 +30,11 @@ docs/index.html GitHub Pages 發布頁
 ```
 
 課程資訊與積分認定以各主辦單位／認證單位公告為準。
+
+## 節慶影片（docs/greetings）
+
+中秋節慶賀動畫，直式 1080×1920、30 秒，分「個案與家屬」「同仁」「對外社群」三個版本。
+
+- 線上播放：https://yaohsiang-ux.github.io/ltc-course-search/greetings/
+- `greetings/build_greetings.py`：由文案設定產出三個自包含 HTML 動畫（修改文案後重新執行即可）
+- `greetings/render_video.py`：以 Playwright 逐幀截圖、ffmpeg 合成 MP4（需 `pip install playwright imageio-ffmpeg`）
