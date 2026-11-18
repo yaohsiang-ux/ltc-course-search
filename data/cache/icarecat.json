@@ -5065,5 +5065,14 @@
   "organizer": "金牌居家長照機構",
   "price": "1000",
   "online": false
+ },
+ "95668": {
+  "title": "BLS CPR+AED急救證班",
+  "start": "2026-12-19",
+  "end": "2026-12-19",
+  "location": "嘉義市忠孝路151號",
+  "organizer": "嘉義市樂齡共生學會",
+  "price": "600",
+  "online": false
  }
 }
